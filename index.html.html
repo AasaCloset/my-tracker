@@ -1,0 +1,1683 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmartSpend - Expense & Savings Tracker</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+  </style>
+</head>
+<body class="h-full font-sans antialiased bg-slate-950 text-slate-100 flex flex-col min-h-screen">
+
+  <!-- Header / Navigation -->
+  <header class="sticky top-0 z-30 bg-slate-900/80 backdrop-blur-md border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <!-- Brand & User Profile Button -->
+      <div class="flex items-center gap-3">
+        <!-- User Profile Avatar Trigger -->
+        <button id="openProfileModalBtn" class="relative group focus:outline-none" title="Customize Profile & Photo">
+          <div id="headerAvatarContainer" class="w-10 h-10 rounded-full border-2 border-emerald-500/50 bg-slate-800 flex items-center justify-center overflow-hidden shadow-md group-hover:border-emerald-400 transition">
+            <!-- Dynamic Avatar Content (Image or Icon) -->
+            <i data-lucide="user" class="w-5 h-5 text-emerald-400"></i>
+          </div>
+          <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 border-slate-900 rounded-full flex items-center justify-center text-[8px] text-slate-950 font-bold">+</span>
+        </button>
+
+        <div>
+          <h1 class="font-bold text-base sm:text-lg leading-none text-slate-100 flex items-center gap-1.5">
+            <span id="headerUserName">SmartSpend</span>
+          </h1>
+          <p class="text-xs text-slate-400 mt-0.5">Expense & Savings Tracker</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Currency Selector with Flag Icons -->
+        <div class="flex items-center gap-1.5 bg-slate-800 px-2.5 py-1.5 rounded-xl border border-slate-700">
+          <i data-lucide="coins" class="w-4 h-4 text-amber-400"></i>
+          <select id="currencySelector" class="bg-transparent text-xs font-semibold text-slate-200 focus:outline-none cursor-pointer">
+            <option value="$" class="bg-slate-900">🇺🇸 USD ($)</option>
+            <option value="रू" class="bg-slate-900">🇳🇵 NPR (रू)</option>
+            <option value="₹" class="bg-slate-900">🇮🇳 INR (₹)</option>
+            <option value="€" class="bg-slate-900">🇪🇺 EUR (€)</option>
+            <option value="£" class="bg-slate-900">🇬🇧 GBP (£)</option>
+            <option value="AED" class="bg-slate-900">🇦🇪 AED</option>
+            <option value="QAR" class="bg-slate-900">🇶🇦 QAR</option>
+          </select>
+        </div>
+
+        <!-- Add Account Modal Button -->
+        <button id="openAccountModalBtn" class="hidden sm:flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors border border-slate-700">
+          <i data-lucide="credit-card" class="w-4 h-4 text-blue-400"></i>
+          <span>Accounts</span>
+        </button>
+
+        <!-- Google Sheets Config Button -->
+        <button id="openConfigBtn" class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors border border-slate-700">
+          <i data-lucide="sheet" class="w-4 h-4 text-emerald-400"></i>
+          <span class="hidden md:inline">Google Sheets Link</span>
+          <span id="sheetStatusDot" class="w-2 h-2 rounded-full bg-amber-500" title="Not connected"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    
+    <!-- Notification Toast Container -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Overview Stats Bar (4 Metric Cards) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      
+      <!-- Total Savings Card -->
+      <div class="bg-gradient-to-br from-emerald-950/60 to-slate-900 border border-emerald-500/30 rounded-2xl p-4 flex items-center justify-between shadow-lg shadow-emerald-950/20">
+        <div class="space-y-1">
+          <p class="text-xs text-emerald-400 uppercase tracking-wider font-semibold">Total Savings</p>
+          <p class="text-2xl font-bold text-emerald-300" id="statTotalSavings">$0.00</p>
+          <p class="text-[10px] text-emerald-500/80">Saved across all funds</p>
+        </div>
+        <div class="p-3 bg-emerald-500/20 text-emerald-400 rounded-xl border border-emerald-500/30">
+          <i data-lucide="vault" class="w-6 h-6"></i>
+        </div>
+      </div>
+
+      <!-- Total Expense Card -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex items-center justify-between">
+        <div class="space-y-1">
+          <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Total Expenses</p>
+          <p class="text-2xl font-bold text-slate-100" id="statTotalExpenses">$0.00</p>
+          <p class="text-[10px] text-slate-500">Lifetime recorded</p>
+        </div>
+        <div class="p-3 bg-red-500/10 text-red-400 rounded-xl border border-red-500/20">
+          <i data-lucide="arrow-up-right" class="w-6 h-6"></i>
+        </div>
+      </div>
+
+      <!-- Total Account Balance -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex items-center justify-between">
+        <div class="space-y-1">
+          <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Liquid Balances</p>
+          <p class="text-2xl font-bold text-slate-100" id="statTotalBalance">$0.00</p>
+          <p class="text-[10px] text-slate-500">Available in accounts</p>
+        </div>
+        <div class="p-3 bg-blue-500/10 text-blue-400 rounded-xl border border-blue-500/20">
+          <i data-lucide="wallet" class="w-6 h-6"></i>
+        </div>
+      </div>
+
+      <!-- This Month Expenses -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex items-center justify-between">
+        <div class="space-y-1">
+          <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold">This Month Spent</p>
+          <p class="text-2xl font-bold text-slate-100" id="statMonthExpenses">$0.00</p>
+          <p class="text-[10px] text-slate-500" id="statMonthName">Current month</p>
+        </div>
+        <div class="p-3 bg-purple-500/10 text-purple-400 rounded-xl border border-purple-500/20">
+          <i data-lucide="calendar" class="w-6 h-6"></i>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Grid Layout -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      
+      <!-- Left Column: Form & Accounts (5 cols on lg) -->
+      <div class="lg:col-span-5 space-y-6">
+        
+        <!-- Combined Transaction Form Card -->
+        <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+          
+          <!-- Mode Switcher (Expense vs Savings Deposit) -->
+          <div class="flex p-1 bg-slate-950 rounded-xl border border-slate-800 mb-4">
+            <button id="modeExpenseBtn" type="button" class="flex-1 py-2 text-xs font-semibold rounded-lg bg-emerald-600 text-white shadow transition-all flex items-center justify-center gap-1.5">
+              <i data-lucide="minus-circle" class="w-4 h-4"></i>
+              Add Expense
+            </button>
+            <button id="modeSavingsBtn" type="button" class="flex-1 py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-slate-200 transition-all flex items-center justify-center gap-1.5">
+              <i data-lucide="piggy-bank" class="w-4 h-4 text-emerald-400"></i>
+              Add to Savings
+            </button>
+          </div>
+
+          <form id="transactionForm" class="space-y-4">
+            <input type="hidden" id="entryType" value="expense" />
+
+            <!-- Date & Account Row -->
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-medium text-slate-300 mb-1" for="entryDate">Date</label>
+                <input type="date" id="entryDate" required
+                  class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-emerald-500 transition" />
+              </div>
+
+              <div>
+                <label class="block text-xs font-medium text-slate-300 mb-1" for="entryAccount">Source Account</label>
+                <select id="entryAccount" required
+                  class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-emerald-500 transition cursor-pointer">
+                  <!-- Dynamic Accounts List -->
+                </select>
+              </div>
+            </div>
+
+            <!-- Amount Input (Fixed Flex Prefix Layout - Prevents Overlap) -->
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1" for="entryAmount">
+                Amount (<span class="currencySymbolDisplay">$</span>)
+              </label>
+              <div class="flex items-center rounded-xl bg-slate-950 border border-slate-800 focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500 transition overflow-hidden">
+                <span class="pl-3.5 pr-2.5 py-2.5 text-slate-400 font-bold text-xs shrink-0 select-none border-r border-slate-800/80 bg-slate-900/60 currencySymbolDisplay">$</span>
+                <input type="number" id="entryAmount" step="0.01" min="0.01" placeholder="0.00" required
+                  class="w-full bg-transparent px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none" />
+              </div>
+            </div>
+
+            <!-- Expense Category -->
+            <div id="categoryGroup" class="relative">
+              <label class="block text-xs font-medium text-slate-300 mb-1" for="categoryInput">Category</label>
+              <div class="relative">
+                <input type="text" id="categoryInput" placeholder="Search or type category..." autocomplete="off"
+                  class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-500 transition pr-10" />
+                <button type="button" id="toggleCategoryDropdown" class="absolute inset-y-0 right-0 px-3 flex items-center text-slate-400 hover:text-slate-200">
+                  <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                </button>
+              </div>
+
+              <!-- Auto-complete Dropdown -->
+              <div id="categoryDropdown" class="hidden absolute z-20 w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl max-h-48 overflow-y-auto">
+                <div id="categoryOptionsList" class="py-1 divide-y divide-slate-800/50">
+                  <!-- Dynamic Options -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Savings Goal Selector -->
+            <div id="savingsGoalGroup" class="hidden">
+              <label class="block text-xs font-medium text-slate-300 mb-1" for="savingsGoalInput">Savings Fund / Goal Name</label>
+              <input type="text" id="savingsGoalInput" placeholder="e.g. Emergency Fund, New Laptop, Vacation"
+                class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-500 transition" />
+            </div>
+
+            <!-- Notes / Description -->
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1" for="entryNotes">Notes / Description</label>
+              <textarea id="entryNotes" rows="2" placeholder="Optional notes or details..."
+                class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-100 focus:outline-none focus:border-emerald-500 transition resize-none"></textarea>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" id="submitBtn"
+              class="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-semibold rounded-xl shadow-lg shadow-emerald-900/30 flex items-center justify-center gap-2 transition-all transform active:scale-[0.98]">
+              <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+              <span id="submitBtnText">Record Expense</span>
+            </button>
+          </form>
+        </section>
+
+        <!-- Accounts Overview Card -->
+        <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+            <h2 class="text-sm font-semibold flex items-center gap-2 text-slate-100">
+              <i data-lucide="wallet" class="w-4 h-4 text-blue-400"></i>
+              Your Accounts & Vaults
+            </h2>
+            <button id="openAccountModalBtn2" class="text-xs text-emerald-400 hover:text-emerald-300 font-medium flex items-center gap-1">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add New
+            </button>
+          </div>
+
+          <div id="accountsListContainer" class="space-y-2">
+            <!-- Dynamic Accounts List -->
+          </div>
+        </section>
+
+        <!-- Smart Advice Card -->
+        <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+          <div class="flex items-center gap-2 mb-3 pb-3 border-b border-slate-800">
+            <i data-lucide="sparkles" class="w-5 h-5 text-amber-400"></i>
+            <h2 class="text-sm font-semibold text-slate-100">Smart Financial Advice</h2>
+          </div>
+          <div id="insightsContainer" class="space-y-3">
+            <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800 text-xs text-slate-400">
+              Add your first expense or savings deposit to generate tailored insights.
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- Right Column: Charts, Savings Goals, and Table (7 cols on lg) -->
+      <div class="lg:col-span-7 space-y-6">
+        
+        <!-- Analytics Dashboard Card -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+          <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
+            <h2 class="text-sm font-semibold flex items-center gap-2 text-slate-100">
+              <i data-lucide="bar-chart-3" class="w-4 h-4 text-purple-400"></i>
+              Financial Overview
+            </h2>
+            <div class="flex gap-2">
+              <button id="chartViewCategoryBtn" class="px-3 py-1 text-xs rounded-lg bg-emerald-600 text-white font-medium transition">Expenses Breakdown</button>
+              <button id="chartViewTrendBtn" class="px-3 py-1 text-xs rounded-lg bg-slate-800 text-slate-400 hover:text-slate-200 font-medium transition">Savings vs Expense</button>
+            </div>
+          </div>
+
+          <!-- Category Doughnut Chart -->
+          <div id="categoryChartWrapper" class="relative h-64 sm:h-72 w-full flex items-center justify-center">
+            <canvas id="categoryChart"></canvas>
+          </div>
+
+          <!-- Savings vs Expense Bar Chart -->
+          <div id="trendChartWrapper" class="relative h-64 sm:h-72 w-full hidden">
+            <canvas id="trendChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Savings Vaults / Goals Summary Card -->
+        <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+            <div class="flex items-center gap-2">
+              <i data-lucide="piggy-bank" class="w-5 h-5 text-emerald-400"></i>
+              <h2 class="text-sm font-semibold text-slate-100">Savings Funds & Deposits</h2>
+            </div>
+            <span class="text-xs text-slate-400" id="savingsVaultCount">0 Goals</span>
+          </div>
+
+          <div id="savingsVaultsContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <!-- Dynamic Savings Vault Cards -->
+          </div>
+        </section>
+
+        <!-- Transaction History Table Card -->
+        <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
+            
+            <!-- Table Tabs -->
+            <div class="flex gap-2 bg-slate-950 p-1 rounded-xl border border-slate-800">
+              <button id="tableTabAll" class="px-3 py-1 text-xs font-medium rounded-lg bg-emerald-600 text-white transition">All Entries</button>
+              <button id="tableTabExpenses" class="px-3 py-1 text-xs font-medium text-slate-400 hover:text-slate-200 transition">Expenses</button>
+              <button id="tableTabSavings" class="px-3 py-1 text-xs font-medium text-slate-400 hover:text-slate-200 transition">Savings</button>
+            </div>
+
+            <!-- Search & CSV Export -->
+            <div class="flex items-center gap-2">
+              <div class="relative flex-1 sm:w-44">
+                <input type="text" id="searchInput" placeholder="Search entries..." 
+                  class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 pl-7" />
+                <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2 top-2 text-slate-500"></i>
+              </div>
+              <button id="exportCsvBtn" title="Export CSV" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg border border-slate-700 transition">
+                <i data-lucide="download" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Transactions Table -->
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-slate-300">
+              <thead class="bg-slate-950/80 uppercase text-[10px] tracking-wider text-slate-400 border-b border-slate-800">
+                <tr>
+                  <th class="py-3 px-3">Date</th>
+                  <th class="py-3 px-3">Type</th>
+                  <th class="py-3 px-3">Account</th>
+                  <th class="py-3 px-3">Category / Goal</th>
+                  <th class="py-3 px-3">Notes</th>
+                  <th class="py-3 px-3 text-right">Amount</th>
+                  <th class="py-3 px-3 text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody id="transactionTableBody" class="divide-y divide-slate-800/60">
+                <!-- JS Inserted Rows -->
+              </tbody>
+            </table>
+            
+            <div id="emptyTableState" class="py-12 text-center text-slate-500 space-y-2">
+              <i data-lucide="receipt" class="w-10 h-10 mx-auto stroke-1 text-slate-600"></i>
+              <p class="text-sm">No transaction history found.</p>
+              <p class="text-xs text-slate-600">Start logging your expenses or savings above.</p>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- User Profile & Photo Customization Modal -->
+  <div id="profileModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
+          <i data-lucide="user-cog" class="w-5 h-5 text-emerald-400"></i>
+          Profile & Photo Customization
+        </h3>
+        <button id="closeProfileModal" class="text-slate-400 hover:text-slate-200">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Live Avatar Preview Box -->
+      <div class="flex flex-col items-center justify-center space-y-2">
+        <div id="profilePreviewContainer" class="w-20 h-20 rounded-full border-4 border-emerald-500/60 bg-slate-800 flex items-center justify-center overflow-hidden text-3xl shadow-xl">
+          <i data-lucide="user" class="w-10 h-10 text-emerald-400"></i>
+        </div>
+        <p class="text-xs text-slate-400">Your App Avatar & Identity</p>
+      </div>
+
+      <!-- User Name Field -->
+      <div>
+        <label class="block text-xs font-medium text-slate-300 mb-1" for="userNameInput">Your Name / App Title</label>
+        <input type="text" id="userNameInput" placeholder="e.g. Alex's Spending"
+          class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-500" />
+      </div>
+
+      <!-- Tab: Upload Custom Photo OR Choose Icon/Emoji -->
+      <div class="space-y-3">
+        <label class="block text-xs font-medium text-slate-300">Choose Profile Picture Source</label>
+        
+        <div class="grid grid-cols-2 gap-2 p-1 bg-slate-950 rounded-xl border border-slate-800">
+          <button id="avatarTabUploadBtn" type="button" class="py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 text-white transition">
+            Upload Photo
+          </button>
+          <button id="avatarTabPresetBtn" type="button" class="py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-slate-200 transition">
+            Choose Avatar
+          </button>
+        </div>
+
+        <!-- Photo Upload Box -->
+        <div id="avatarUploadSection" class="p-4 bg-slate-950 border border-dashed border-slate-800 rounded-xl text-center space-y-2">
+          <i data-lucide="upload-cloud" class="w-8 h-8 mx-auto text-emerald-400 stroke-1"></i>
+          <p class="text-xs text-slate-300">Upload a custom profile photo</p>
+          <p class="text-[10px] text-slate-500">JPG, PNG, GIF up to 2MB</p>
+          <input type="file" id="profilePhotoInput" accept="image/*" class="hidden" />
+          <button type="button" onclick="document.getElementById('profilePhotoInput').click()" 
+            class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs rounded-lg transition font-medium">
+            Select Photo File
+          </button>
+        </div>
+
+        <!-- Preset Avatar Selector Box (Hidden initially) -->
+        <div id="avatarPresetSection" class="hidden p-3 bg-slate-950 border border-slate-800 rounded-xl space-y-2">
+          <p class="text-[11px] text-slate-400">Pick an avatar icon or emoji:</p>
+          <div id="presetAvatarGrid" class="grid grid-cols-6 gap-2">
+            <!-- Dynamic Avatar Presets -->
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
+        <button type="button" id="cancelProfileBtn" class="px-4 py-2 text-xs bg-slate-800 text-slate-300 rounded-xl hover:bg-slate-700">Cancel</button>
+        <button type="button" id="saveProfileBtn" class="px-4 py-2 text-xs bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-500">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Account Modal -->
+  <div id="accountModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
+          <i data-lucide="wallet" class="w-5 h-5 text-blue-400"></i>
+          Add New Account
+        </h3>
+        <button id="closeAccountModal" class="text-slate-400 hover:text-slate-200">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="newAccountForm" class="space-y-4">
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1" for="newAccountName">Account Name</label>
+          <input type="text" id="newAccountName" placeholder="e.g. Nabil Bank, Cash Wallet, Emergency Fund" required
+            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-500" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1" for="newAccountType">Account Type</label>
+          <select id="newAccountType" required
+            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-500 cursor-pointer">
+            <option value="Cash">Cash Wallet</option>
+            <option value="Bank">Bank Account</option>
+            <option value="Savings">Savings Account / Vault</option>
+            <option value="Credit">Credit Card</option>
+          </select>
+        </div>
+
+        <!-- Account Icon Selector -->
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Account Icon / Photo</label>
+          <div class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl space-y-2">
+            <div id="accountIconGrid" class="flex flex-wrap gap-2">
+              <!-- Preset Account Icon Chips -->
+            </div>
+            <div class="pt-1 flex items-center justify-between">
+              <span class="text-[10px] text-slate-500">Or upload custom icon:</span>
+              <input type="file" id="accountIconFileInput" accept="image/*" class="hidden" />
+              <button type="button" onclick="document.getElementById('accountIconFileInput').click()" class="text-[11px] text-emerald-400 hover:text-emerald-300 font-medium">
+                + Custom Photo
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1" for="newAccountBalance">
+            Initial Starting Balance (<span class="currencySymbolDisplay">$</span>)
+          </label>
+          <div class="flex items-center rounded-xl bg-slate-950 border border-slate-800 focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500 transition overflow-hidden">
+            <span class="pl-3.5 pr-2.5 py-2.5 text-slate-400 font-bold text-xs shrink-0 select-none border-r border-slate-800/80 bg-slate-900/60 currencySymbolDisplay">$</span>
+            <input type="number" id="newAccountBalance" step="0.01" value="0.00" placeholder="0.00" required
+              class="w-full bg-transparent px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none" />
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" id="cancelAccountBtn" class="px-4 py-2 text-xs bg-slate-800 text-slate-300 rounded-xl hover:bg-slate-700">Cancel</button>
+          <button type="submit" class="px-4 py-2 text-xs bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-500">Create Account</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Google Sheets Integration Modal -->
+  <div id="configModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
+          <i data-lucide="file-spreadsheet" class="w-5 h-5 text-emerald-400"></i>
+          Google Sheets Integration Setup
+        </h3>
+        <button id="closeConfigModal" class="text-slate-400 hover:text-slate-200">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <p class="text-xs text-slate-300 leading-relaxed">
+        Sync expenses and savings deposits directly into your personal Google Sheet using Google Apps Script!
+      </p>
+
+      <!-- Apps Script Guide -->
+      <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-2 text-xs text-slate-400">
+        <p class="font-semibold text-emerald-400">3-Step Setup Instructions:</p>
+        <ol class="list-decimal list-inside space-y-1.5 pl-1">
+          <li>Create a Google Sheet and click <span class="text-slate-200 font-mono">Extensions > Apps Script</span>.</li>
+          <li>Paste the code snippet below and click <span class="text-slate-200">Deploy > New deployment</span>.</li>
+          <li>Select <span class="text-slate-200">Web App</span>, set <i>Who has access</i> to <span class="text-emerald-400">Anyone</span>, deploy, and paste the Web App URL below.</li>
+        </ol>
+      </div>
+
+      <!-- Script Code Snippet -->
+      <div class="relative">
+        <pre class="bg-slate-950 border border-slate-800 p-3 rounded-xl text-[11px] font-mono text-slate-300 overflow-x-auto max-h-36 selection:bg-emerald-900">
+function doPost(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var data = JSON.parse(e.postData.contents);
+  
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(["ID", "Date", "Type", "Account", "Category/Goal", "Amount", "Currency", "Notes", "Timestamp"]);
+  }
+  
+  sheet.appendRow([
+    data.id,
+    data.date,
+    data.type,
+    data.account,
+    data.categoryOrGoal,
+    data.amount,
+    data.currency,
+    data.notes,
+    new Date()
+  ]);
+  
+  return ContentService
+    .createTextOutput(JSON.stringify({ "result": "success" }))
+    .setMimeType(ContentService.MimeType.JSON);
+}</pre>
+        <button id="copyScriptBtn" class="absolute top-2 right-2 px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 rounded border border-slate-700 flex items-center gap-1">
+          <i data-lucide="copy" class="w-3 h-3"></i> Copy Code
+        </button>
+      </div>
+
+      <!-- Input Field -->
+      <div>
+        <label class="block text-xs font-medium text-slate-300 mb-1" for="sheetUrlInput">Google Apps Script Web App URL</label>
+        <input type="url" id="sheetUrlInput" placeholder="https://script.google.com/macros/s/.../exec"
+          class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-500 font-mono" />
+      </div>
+
+      <div class="flex items-center justify-between pt-2">
+        <button id="testConnectionBtn" type="button" class="px-3 py-2 text-xs text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-xl border border-slate-700">
+          Test Endpoint
+        </button>
+        <div class="flex gap-2">
+          <button id="saveConfigBtn" type="button" class="px-4 py-2 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-xl">
+            Save Web App Link
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Application Logic -->
+  <script>
+    // --- Preset Expense Categories ---
+    const PRESET_CATEGORIES = [
+      { name: 'Groceries & Food', color: '#10b981' },
+      { name: 'Dining & Snacks', color: '#f59e0b' },
+      { name: 'Rent & Housing', color: '#3b82f6' },
+      { name: 'Transportation & Fuel', color: '#8b5cf6' },
+      { name: 'Bills & Utilities', color: '#06b6d4' },
+      { name: 'Entertainment & Leisure', color: '#ec4899' },
+      { name: 'Healthcare & Fitness', color: '#ef4444' },
+      { name: 'Shopping & Clothes', color: '#6366f1' },
+      { name: 'Education & Books', color: '#84cc16' },
+      { name: 'Travel & Trips', color: '#f97316' },
+      { name: 'Other Expenses', color: '#64748b' }
+    ];
+
+    const PRESET_AVATARS = ['🦊', '🦁', '🦉', '🚀', '👑', '💼', '💰', '⚡', '🎯', '💎', '🐱', '🕶️'];
+    const PRESET_ACCOUNT_ICONS = ['wallet', 'landmark', 'vault', 'credit-card', 'piggy-bank', 'briefcase', 'car', 'shopping-bag', 'gift', 'coins'];
+
+    // --- State Variables ---
+    let accounts = [];
+    let transactions = [];
+    let userProfile = {
+      name: 'SmartSpend',
+      type: 'icon', // 'image', 'emoji', 'icon'
+      data: 'user'
+    };
+    let googleSheetUrl = '';
+    let selectedCurrency = '$';
+    let currentFilterTab = 'all';
+
+    let selectedAccountIconType = 'icon';
+    let selectedAccountIconVal = 'wallet';
+
+    let tempProfileState = { ...userProfile };
+
+    let categoryChartInstance = null;
+    let trendChartInstance = null;
+
+    // --- DOM References ---
+    const transactionForm = document.getElementById('transactionForm');
+    const entryTypeInput = document.getElementById('entryType');
+    const entryDate = document.getElementById('entryDate');
+    const entryAccount = document.getElementById('entryAccount');
+    const entryAmount = document.getElementById('entryAmount');
+    const categoryGroup = document.getElementById('categoryGroup');
+    const categoryInput = document.getElementById('categoryInput');
+    const categoryDropdown = document.getElementById('categoryDropdown');
+    const categoryOptionsList = document.getElementById('categoryOptionsList');
+    const toggleCategoryDropdown = document.getElementById('toggleCategoryDropdown');
+    const savingsGoalGroup = document.getElementById('savingsGoalGroup');
+    const savingsGoalInput = document.getElementById('savingsGoalInput');
+    const entryNotes = document.getElementById('entryNotes');
+    const submitBtn = document.getElementById('submitBtn');
+    const submitBtnText = document.getElementById('submitBtnText');
+
+    // Mode Buttons
+    const modeExpenseBtn = document.getElementById('modeExpenseBtn');
+    const modeSavingsBtn = document.getElementById('modeSavingsBtn');
+
+    // Stats
+    const statTotalSavings = document.getElementById('statTotalSavings');
+    const statTotalExpenses = document.getElementById('statTotalExpenses');
+    const statTotalBalance = document.getElementById('statTotalBalance');
+    const statMonthExpenses = document.getElementById('statMonthExpenses');
+    const statMonthName = document.getElementById('statMonthName');
+
+    // Accounts & Vaults
+    const accountsListContainer = document.getElementById('accountsListContainer');
+    const savingsVaultsContainer = document.getElementById('savingsVaultsContainer');
+    const savingsVaultCount = document.getElementById('savingsVaultCount');
+    const insightsContainer = document.getElementById('insightsContainer');
+
+    // Table
+    const transactionTableBody = document.getElementById('transactionTableBody');
+    const emptyTableState = document.getElementById('emptyTableState');
+    const searchInput = document.getElementById('searchInput');
+    const tableTabAll = document.getElementById('tableTabAll');
+    const tableTabExpenses = document.getElementById('tableTabExpenses');
+    const tableTabSavings = document.getElementById('tableTabSavings');
+    const currencySelector = document.getElementById('currencySelector');
+
+    // User Profile Elements
+    const openProfileModalBtn = document.getElementById('openProfileModalBtn');
+    const profileModal = document.getElementById('profileModal');
+    const closeProfileModal = document.getElementById('closeProfileModal');
+    const cancelProfileBtn = document.getElementById('cancelProfileBtn');
+    const saveProfileBtn = document.getElementById('saveProfileBtn');
+    const headerAvatarContainer = document.getElementById('headerAvatarContainer');
+    const headerUserName = document.getElementById('headerUserName');
+    const profilePreviewContainer = document.getElementById('profilePreviewContainer');
+    const userNameInput = document.getElementById('userNameInput');
+    const profilePhotoInput = document.getElementById('profilePhotoInput');
+    const avatarTabUploadBtn = document.getElementById('avatarTabUploadBtn');
+    const avatarTabPresetBtn = document.getElementById('avatarTabPresetBtn');
+    const avatarUploadSection = document.getElementById('avatarUploadSection');
+    const avatarPresetSection = document.getElementById('avatarPresetSection');
+    const presetAvatarGrid = document.getElementById('presetAvatarGrid');
+
+    // Modals
+    const accountModal = document.getElementById('accountModal');
+    const openAccountModalBtn = document.getElementById('openAccountModalBtn');
+    const openAccountModalBtn2 = document.getElementById('openAccountModalBtn2');
+    const closeAccountModal = document.getElementById('closeAccountModal');
+    const cancelAccountBtn = document.getElementById('cancelAccountBtn');
+    const newAccountForm = document.getElementById('newAccountForm');
+    const accountIconGrid = document.getElementById('accountIconGrid');
+    const accountIconFileInput = document.getElementById('accountIconFileInput');
+
+    const configModal = document.getElementById('configModal');
+    const openConfigBtn = document.getElementById('openConfigBtn');
+    const closeConfigModal = document.getElementById('closeConfigModal');
+    const saveConfigBtn = document.getElementById('saveConfigBtn');
+    const sheetUrlInput = document.getElementById('sheetUrlInput');
+    const sheetStatusDot = document.getElementById('sheetStatusDot');
+    const copyScriptBtn = document.getElementById('copyScriptBtn');
+    const exportCsvBtn = document.getElementById('exportCsvBtn');
+
+    // Set Default Date to Today
+    entryDate.value = new Date().toISOString().split('T')[0];
+
+    // --- App Init ---
+    window.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      loadStoredData();
+      renderCategoryDropdownOptions('');
+      renderAccountIconGrid();
+      renderPresetAvatarGrid();
+      updateDashboard();
+    });
+
+    // --- LocalStorage Handling ---
+    function loadStoredData() {
+      try {
+        const storedProfile = localStorage.getItem('smartspend_profile');
+        if (storedProfile) {
+          userProfile = JSON.parse(storedProfile);
+        }
+        renderUserProfileHeader();
+
+        const storedAccounts = localStorage.getItem('smartspend_accounts');
+        if (storedAccounts) {
+          accounts = JSON.parse(storedAccounts);
+        } else {
+          // Default starting accounts
+          accounts = [
+            { id: 'acc_1', name: 'Main Bank Account', type: 'Bank', balance: 0, iconType: 'icon', iconVal: 'landmark' },
+            { id: 'acc_2', name: 'Cash Wallet', type: 'Cash', balance: 0, iconType: 'icon', iconVal: 'wallet' },
+            { id: 'acc_3', name: 'Savings Vault', type: 'Savings', balance: 0, iconType: 'icon', iconVal: 'vault' }
+          ];
+          saveAccountsToStorage();
+        }
+
+        const storedTx = localStorage.getItem('smartspend_transactions');
+        if (storedTx) {
+          transactions = JSON.parse(storedTx);
+        } else {
+          transactions = [];
+          saveTransactionsToStorage();
+        }
+
+        googleSheetUrl = localStorage.getItem('smartspend_sheet_url') || '';
+        if (googleSheetUrl) {
+          sheetUrlInput.value = googleSheetUrl;
+          sheetStatusDot.className = "w-2 h-2 rounded-full bg-emerald-500";
+        }
+
+        const storedCurrency = localStorage.getItem('smartspend_currency');
+        if (storedCurrency) {
+          selectedCurrency = storedCurrency;
+          currencySelector.value = storedCurrency;
+        }
+        updateCurrencyDisplays();
+        populateAccountSelect();
+
+      } catch (e) {
+        console.error("Storage load error:", e);
+      }
+    }
+
+    function saveAccountsToStorage() {
+      localStorage.setItem('smartspend_accounts', JSON.stringify(accounts));
+    }
+
+    function saveTransactionsToStorage() {
+      localStorage.setItem('smartspend_transactions', JSON.stringify(transactions));
+    }
+
+    function saveProfileToStorage() {
+      localStorage.setItem('smartspend_profile', JSON.stringify(userProfile));
+    }
+
+    // --- User Profile Avatar Functions ---
+    function renderUserProfileHeader() {
+      headerUserName.textContent = userProfile.name || 'SmartSpend';
+      renderAvatarToContainer(headerAvatarContainer, userProfile, 'w-5 h-5 text-emerald-400');
+    }
+
+    function renderAvatarToContainer(container, profileObj, iconClass = 'w-6 h-6 text-emerald-400') {
+      container.innerHTML = '';
+      if (profileObj.type === 'image') {
+        const img = document.createElement('img');
+        img.src = profileObj.data;
+        img.alt = 'User Avatar';
+        img.className = 'w-full h-full object-cover';
+        container.appendChild(img);
+      } else if (profileObj.type === 'emoji') {
+        const span = document.createElement('span');
+        span.className = 'text-xl leading-none';
+        span.textContent = profileObj.data;
+        container.appendChild(span);
+      } else {
+        const icon = document.createElement('i');
+        icon.setAttribute('data-lucide', profileObj.data || 'user');
+        icon.className = iconClass;
+        container.appendChild(icon);
+        lucide.createIcons();
+      }
+    }
+
+    function renderPresetAvatarGrid() {
+      presetAvatarGrid.innerHTML = '';
+      PRESET_AVATARS.forEach(emoji => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 hover:border-emerald-500 flex items-center justify-center text-lg transition';
+        btn.textContent = emoji;
+        btn.addEventListener('click', () => {
+          tempProfileState.type = 'emoji';
+          tempProfileState.data = emoji;
+          renderAvatarToContainer(profilePreviewContainer, tempProfileState, 'w-8 h-8 text-emerald-400');
+        });
+        presetAvatarGrid.appendChild(btn);
+      });
+    }
+
+    openProfileModalBtn.addEventListener('click', () => {
+      tempProfileState = { ...userProfile };
+      userNameInput.value = userProfile.name || '';
+      renderAvatarToContainer(profilePreviewContainer, tempProfileState, 'w-8 h-8 text-emerald-400');
+      profileModal.classList.remove('hidden');
+    });
+
+    closeProfileModal.addEventListener('click', () => profileModal.classList.add('hidden'));
+    cancelProfileBtn.addEventListener('click', () => profileModal.classList.add('hidden'));
+
+    avatarTabUploadBtn.addEventListener('click', () => {
+      avatarUploadSection.classList.remove('hidden');
+      avatarPresetSection.classList.add('hidden');
+      avatarTabUploadBtn.className = "py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 text-white transition";
+      avatarTabPresetBtn.className = "py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-slate-200 transition";
+    });
+
+    avatarTabPresetBtn.addEventListener('click', () => {
+      avatarPresetSection.classList.remove('hidden');
+      avatarUploadSection.classList.add('hidden');
+      avatarTabPresetBtn.className = "py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 text-white transition";
+      avatarTabUploadBtn.className = "py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-slate-200 transition";
+    });
+
+    // Profile Photo File Upload Handler
+    profilePhotoInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        if (file.size > 2 * 1024 * 1024) {
+          showToast('Image size should be under 2MB', 'error');
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          tempProfileState.type = 'image';
+          tempProfileState.data = evt.target.result;
+          renderAvatarToContainer(profilePreviewContainer, tempProfileState, 'w-8 h-8 text-emerald-400');
+          showToast('Profile photo selected!', 'info');
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    saveProfileBtn.addEventListener('click', () => {
+      userProfile.name = userNameInput.value.trim() || 'SmartSpend';
+      userProfile.type = tempProfileState.type;
+      userProfile.data = tempProfileState.data;
+
+      saveProfileToStorage();
+      renderUserProfileHeader();
+      profileModal.classList.add('hidden');
+      showToast('Profile updated successfully!', 'success');
+    });
+
+    // --- Account Icon Grid Handler ---
+    function renderAccountIconGrid() {
+      accountIconGrid.innerHTML = '';
+      PRESET_ACCOUNT_ICONS.forEach(iconName => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `p-2 rounded-lg border text-slate-300 transition ${selectedAccountIconVal === iconName && selectedAccountIconType === 'icon' ? 'bg-emerald-600 border-emerald-500 text-white' : 'bg-slate-900 border-slate-800 hover:border-slate-700'}`;
+        btn.innerHTML = `<i data-lucide="${iconName}" class="w-4 h-4"></i>`;
+        btn.addEventListener('click', () => {
+          selectedAccountIconType = 'icon';
+          selectedAccountIconVal = iconName;
+          renderAccountIconGrid();
+        });
+        accountIconGrid.appendChild(btn);
+      });
+      lucide.createIcons();
+    }
+
+    accountIconFileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        if (file.size > 1.5 * 1024 * 1024) {
+          showToast('Icon file must be smaller than 1.5MB', 'error');
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          selectedAccountIconType = 'image';
+          selectedAccountIconVal = evt.target.result;
+          showToast('Custom account icon loaded!', 'info');
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // --- Currency Updates ---
+    currencySelector.addEventListener('change', (e) => {
+      selectedCurrency = e.target.value;
+      localStorage.setItem('smartspend_currency', selectedCurrency);
+      updateCurrencyDisplays();
+      updateDashboard();
+      showToast(`Currency changed to ${selectedCurrency}`, 'info');
+    });
+
+    function updateCurrencyDisplays() {
+      document.querySelectorAll('.currencySymbolDisplay').forEach(el => {
+        el.textContent = selectedCurrency;
+      });
+    }
+
+    // --- Mode Toggle (Expense vs Savings) ---
+    modeExpenseBtn.addEventListener('click', () => {
+      entryTypeInput.value = 'expense';
+      modeExpenseBtn.className = "flex-1 py-2 text-xs font-semibold rounded-lg bg-emerald-600 text-white shadow transition-all flex items-center justify-center gap-1.5";
+      modeSavingsBtn.className = "flex-1 py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-slate-200 transition-all flex items-center justify-center gap-1.5";
+      
+      categoryGroup.classList.remove('hidden');
+      savingsGoalGroup.classList.add('hidden');
+      submitBtnText.textContent = "Record Expense";
+      submitBtn.className = "w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-semibold rounded-xl shadow-lg shadow-emerald-900/30 flex items-center justify-center gap-2 transition-all transform active:scale-[0.98]";
+    });
+
+    modeSavingsBtn.addEventListener('click', () => {
+      entryTypeInput.value = 'savings';
+      modeSavingsBtn.className = "flex-1 py-2 text-xs font-semibold rounded-lg bg-emerald-600 text-white shadow transition-all flex items-center justify-center gap-1.5";
+      modeExpenseBtn.className = "flex-1 py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-slate-200 transition-all flex items-center justify-center gap-1.5";
+      
+      savingsGoalGroup.classList.remove('hidden');
+      categoryGroup.classList.add('hidden');
+      submitBtnText.textContent = "Deposit to Savings";
+      submitBtn.className = "w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-semibold rounded-xl shadow-lg shadow-emerald-900/30 flex items-center justify-center gap-2 transition-all transform active:scale-[0.98]";
+    });
+
+    // --- Accounts Select Box Population ---
+    function populateAccountSelect() {
+      entryAccount.innerHTML = '';
+      accounts.forEach(acc => {
+        const opt = document.createElement('option');
+        opt.value = acc.id;
+        opt.textContent = `${acc.name} (${selectedCurrency} ${acc.balance.toFixed(2)})`;
+        entryAccount.appendChild(opt);
+      });
+    }
+
+    // --- Category Auto-Complete ---
+    function renderCategoryDropdownOptions(query = '') {
+      const filtered = PRESET_CATEGORIES.filter(cat => 
+        cat.name.toLowerCase().includes(query.toLowerCase())
+      );
+
+      categoryOptionsList.innerHTML = '';
+
+      if (filtered.length === 0) {
+        const customOption = document.createElement('div');
+        customOption.className = "px-3 py-2 text-xs text-emerald-400 hover:bg-slate-800 cursor-pointer flex items-center gap-2 font-medium";
+        customOption.innerHTML = `<i data-lucide="plus" class="w-3.5 h-3.5"></i> Custom: "${query}"`;
+        customOption.addEventListener('click', () => {
+          categoryInput.value = query;
+          categoryDropdown.classList.add('hidden');
+        });
+        categoryOptionsList.appendChild(customOption);
+      } else {
+        filtered.forEach(cat => {
+          const item = document.createElement('div');
+          item.className = "px-3 py-2 text-xs text-slate-200 hover:bg-slate-800 cursor-pointer flex items-center justify-between transition-colors";
+          item.innerHTML = `
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${cat.color}"></span>
+              <span>${cat.name}</span>
+            </div>
+          `;
+          item.addEventListener('click', () => {
+            categoryInput.value = cat.name;
+            categoryDropdown.classList.add('hidden');
+          });
+          categoryOptionsList.appendChild(item);
+        });
+      }
+      lucide.createIcons();
+    }
+
+    categoryInput.addEventListener('input', (e) => {
+      renderCategoryDropdownOptions(e.target.value);
+      categoryDropdown.classList.remove('hidden');
+    });
+
+    categoryInput.addEventListener('focus', () => {
+      renderCategoryDropdownOptions(categoryInput.value);
+      categoryDropdown.classList.remove('hidden');
+    });
+
+    toggleCategoryDropdown.addEventListener('click', (e) => {
+      e.stopPropagation();
+      categoryDropdown.classList.toggle('hidden');
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!categoryInput.contains(e.target) && !categoryDropdown.contains(e.target)) {
+        categoryDropdown.classList.add('hidden');
+      }
+    });
+
+    // --- Form Submission Handle ---
+    transactionForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const type = entryTypeInput.value;
+      const date = entryDate.value;
+      const accountId = entryAccount.value;
+      const amount = parseFloat(entryAmount.value);
+      const notes = entryNotes.value.trim();
+
+      if (!date || !accountId || isNaN(amount) || amount <= 0) {
+        showToast('Please fill all required fields correctly.', 'error');
+        return;
+      }
+
+      const accountObj = accounts.find(a => a.id === accountId);
+      if (!accountObj) return;
+
+      let categoryOrGoal = '';
+      if (type === 'expense') {
+        categoryOrGoal = categoryInput.value.trim() || 'Uncategorized';
+        accountObj.balance -= amount;
+      } else {
+        categoryOrGoal = savingsGoalInput.value.trim() || 'General Savings Vault';
+        accountObj.balance += amount;
+      }
+
+      const newTx = {
+        id: 'tx_' + Date.now(),
+        type,
+        date,
+        accountId,
+        accountName: accountObj.name,
+        categoryOrGoal,
+        amount,
+        currency: selectedCurrency,
+        notes: notes || '-'
+      };
+
+      transactions.unshift(newTx);
+
+      saveAccountsToStorage();
+      saveTransactionsToStorage();
+
+      entryAmount.value = '';
+      categoryInput.value = '';
+      savingsGoalInput.value = '';
+      entryNotes.value = '';
+
+      populateAccountSelect();
+      updateDashboard();
+
+      if (googleSheetUrl) {
+        sendToGoogleSheet(newTx);
+      } else {
+        showToast(`${type === 'expense' ? 'Expense' : 'Savings deposit'} recorded!`, 'success');
+      }
+    });
+
+    // --- Google Sheets Sync Call ---
+    async function sendToGoogleSheet(txData) {
+      try {
+        showToast('Syncing with Google Sheets...', 'info');
+        await fetch(googleSheetUrl, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: txData.id,
+            date: txData.date,
+            type: txData.type,
+            account: txData.accountName,
+            categoryOrGoal: txData.categoryOrGoal,
+            amount: txData.amount,
+            currency: txData.currency,
+            notes: txData.notes
+          })
+        });
+        showToast('Saved locally & to Google Sheets!', 'success');
+      } catch (error) {
+        console.error("Sync error:", error);
+        showToast('Saved locally (Sheet sync failed).', 'warning');
+      }
+    }
+
+    // --- Delete Transaction ---
+    function deleteTransaction(id) {
+      const tx = transactions.find(t => t.id === id);
+      if (tx) {
+        const acc = accounts.find(a => a.id === tx.accountId);
+        if (acc) {
+          if (tx.type === 'expense') {
+            acc.balance += tx.amount;
+          } else {
+            acc.balance -= tx.amount;
+          }
+          saveAccountsToStorage();
+        }
+      }
+
+      transactions = transactions.filter(t => t.id !== id);
+      saveTransactionsToStorage();
+      populateAccountSelect();
+      updateDashboard();
+      showToast('Transaction removed', 'info');
+    }
+
+    // --- Dashboard Updates ---
+    function updateDashboard() {
+      calculateStats();
+      renderAccountsList();
+      renderSavingsVaults();
+      renderTransactionsTable();
+      generateSmartInsights();
+      renderCharts();
+    }
+
+    // --- Calculation of Metrics ---
+    function calculateStats() {
+      const totalSavings = transactions
+        .filter(t => t.type === 'savings')
+        .reduce((sum, t) => sum + t.amount, 0);
+
+      const totalExpenses = transactions
+        .filter(t => t.type === 'expense')
+        .reduce((sum, t) => sum + t.amount, 0);
+
+      const totalLiquidBalance = accounts.reduce((sum, a) => sum + a.balance, 0);
+
+      const now = new Date();
+      const curYear = now.getFullYear();
+      const curMonth = now.getMonth();
+
+      const monthExpenses = transactions.filter(t => {
+        if (t.type !== 'expense') return false;
+        const d = new Date(t.date);
+        return d.getFullYear() === curYear && d.getMonth() === curMonth;
+      }).reduce((sum, t) => sum + t.amount, 0);
+
+      statTotalSavings.textContent = `${selectedCurrency} ${totalSavings.toFixed(2)}`;
+      statTotalExpenses.textContent = `${selectedCurrency} ${totalExpenses.toFixed(2)}`;
+      statTotalBalance.textContent = `${selectedCurrency} ${totalLiquidBalance.toFixed(2)}`;
+      statMonthExpenses.textContent = `${selectedCurrency} ${monthExpenses.toFixed(2)}`;
+      
+      const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      statMonthName.textContent = `${monthNames[curMonth]} ${curYear}`;
+    }
+
+    // --- Accounts Card List ---
+    function renderAccountsList() {
+      accountsListContainer.innerHTML = '';
+
+      if (accounts.length === 0) {
+        accountsListContainer.innerHTML = `<p class="text-xs text-slate-500">No accounts created yet.</p>`;
+        return;
+      }
+
+      accounts.forEach(acc => {
+        const card = document.createElement('div');
+        card.className = "flex items-center justify-between p-3 rounded-xl bg-slate-950/70 border border-slate-800 hover:border-slate-700 transition";
+
+        let iconMarkup = `<i data-lucide="${acc.iconVal || 'wallet'}" class="w-4 h-4"></i>`;
+        if (acc.iconType === 'image') {
+          iconMarkup = `<img src="${acc.iconVal}" class="w-4 h-4 rounded object-cover" />`;
+        }
+
+        card.innerHTML = `
+          <div class="flex items-center gap-2.5">
+            <div class="p-2 rounded-lg bg-slate-800 text-slate-300 flex items-center justify-center w-8 h-8">
+              ${iconMarkup}
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-slate-200">${acc.name}</p>
+              <p class="text-[10px] text-slate-500">${acc.type} Account</p>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="text-xs font-mono font-bold ${acc.balance >= 0 ? 'text-slate-100' : 'text-red-400'}">
+              ${selectedCurrency} ${acc.balance.toFixed(2)}
+            </p>
+          </div>
+        `;
+        accountsListContainer.appendChild(card);
+      });
+      lucide.createIcons();
+    }
+
+    // --- Savings Vaults Cards ---
+    function renderSavingsVaults() {
+      savingsVaultsContainer.innerHTML = '';
+
+      const goals = {};
+      transactions.filter(t => t.type === 'savings').forEach(t => {
+        goals[t.categoryOrGoal] = (goals[t.categoryOrGoal] || 0) + t.amount;
+      });
+
+      const goalEntries = Object.entries(goals);
+      savingsVaultCount.textContent = `${goalEntries.length} Goal${goalEntries.length === 1 ? '' : 's'}`;
+
+      if (goalEntries.length === 0) {
+        savingsVaultsContainer.innerHTML = `
+          <div class="col-span-full p-4 text-center bg-slate-950/40 rounded-xl border border-slate-800/80 text-xs text-slate-500">
+            No savings deposited yet. Use "Add to Savings" to start your fund!
+          </div>`;
+        return;
+      }
+
+      goalEntries.forEach(([goalName, totalSaved]) => {
+        const card = document.createElement('div');
+        card.className = "p-3.5 bg-emerald-950/20 border border-emerald-800/40 rounded-xl space-y-2";
+        card.innerHTML = `
+          <div class="flex items-center justify-between">
+            <p class="text-xs font-semibold text-emerald-300 flex items-center gap-1.5">
+              <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i>
+              ${goalName}
+            </p>
+            <span class="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-mono">Vault</span>
+          </div>
+          <div class="flex items-baseline justify-between pt-1">
+            <span class="text-[10px] text-slate-400">Total Saved</span>
+            <span class="text-sm font-bold font-mono text-emerald-200">${selectedCurrency} ${totalSaved.toFixed(2)}</span>
+          </div>
+        `;
+        savingsVaultsContainer.appendChild(card);
+      });
+      lucide.createIcons();
+    }
+
+    // --- Render Table ---
+    function renderTransactionsTable() {
+      const query = searchInput.value.toLowerCase();
+
+      let filtered = transactions.filter(t => {
+        if (currentFilterTab === 'expenses' && t.type !== 'expense') return false;
+        if (currentFilterTab === 'savings' && t.type !== 'savings') return false;
+
+        return t.categoryOrGoal.toLowerCase().includes(query) ||
+               t.notes.toLowerCase().includes(query) ||
+               t.accountName.toLowerCase().includes(query) ||
+               t.date.includes(query);
+      });
+
+      transactionTableBody.innerHTML = '';
+
+      if (filtered.length === 0) {
+        emptyTableState.classList.remove('hidden');
+      } else {
+        emptyTableState.classList.add('hidden');
+        filtered.forEach(tx => {
+          const isExpense = tx.type === 'expense';
+          const badgeClass = isExpense 
+            ? 'bg-red-500/10 text-red-400 border-red-500/20' 
+            : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+
+          const row = document.createElement('tr');
+          row.className = "hover:bg-slate-800/40 transition-colors group";
+          row.innerHTML = `
+            <td class="py-3 px-3 font-mono text-slate-400 text-[11px]">${tx.date}</td>
+            <td class="py-3 px-3">
+              <span class="px-2 py-0.5 rounded text-[10px] font-semibold border ${badgeClass}">
+                ${isExpense ? 'Expense' : 'Savings'}
+              </span>
+            </td>
+            <td class="py-3 px-3 text-slate-300 font-medium">${tx.accountName}</td>
+            <td class="py-3 px-3 text-slate-200 font-medium">${tx.categoryOrGoal}</td>
+            <td class="py-3 px-3 text-slate-400 truncate max-w-[140px]" title="${tx.notes}">${tx.notes}</td>
+            <td class="py-3 px-3 text-right font-semibold font-mono ${isExpense ? 'text-red-400' : 'text-emerald-400'}">
+              ${isExpense ? '-' : '+'}${selectedCurrency} ${tx.amount.toFixed(2)}
+            </td>
+            <td class="py-3 px-3 text-center">
+              <button onclick="deleteTransaction('${tx.id}')" class="text-slate-500 hover:text-red-400 p-1 rounded transition opacity-80 group-hover:opacity-100" title="Delete">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>
+            </td>
+          `;
+          transactionTableBody.appendChild(row);
+        });
+      }
+      lucide.createIcons();
+    }
+
+    searchInput.addEventListener('input', renderTransactionsTable);
+
+    // Table Filter Tabs
+    tableTabAll.addEventListener('click', () => {
+      currentFilterTab = 'all';
+      tableTabAll.className = "px-3 py-1 text-xs font-medium rounded-lg bg-emerald-600 text-white transition";
+      tableTabExpenses.className = "px-3 py-1 text-xs font-medium text-slate-400 hover:text-slate-200 transition";
+      tableTabSavings.className = "px-3 py-1 text-xs font-medium text-slate-400 hover:text-slate-200 transition";
+      renderTransactionsTable();
+    });
+
+    tableTabExpenses.addEventListener('click', () => {
+      currentFilterTab = 'expenses';
+      tableTabExpenses.className = "px-3 py-1 text-xs font-medium rounded-lg bg-emerald-600 text-white transition";
+      tableTabAll.className = "px-3 py-1 text-xs font-medium text-slate-400 hover:text-slate-200 transition";
+      tableTabSavings.className = "px-3 py-1 text-xs font-medium text-slate-400 hover:text-slate-200 transition";
+      renderTransactionsTable();
+    });
+
+    tableTabSavings.addEventListener('click', () => {
+      currentFilterTab = 'savings';
+      tableTabSavings.className = "px-3 py-1 text-xs font-medium rounded-lg bg-emerald-600 text-white transition";
+      tableTabAll.className = "px-3 py-1 text-xs font-medium text-slate-400 hover:text-slate-200 transition";
+      tableTabExpenses.className = "px-3 py-1 text-xs font-medium text-slate-400 hover:text-slate-200 transition";
+      renderTransactionsTable();
+    });
+
+    // --- Smart Advice Engine ---
+    function generateSmartInsights() {
+      insightsContainer.innerHTML = '';
+
+      if (transactions.length < 2) {
+        insightsContainer.innerHTML = `
+          <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800 text-xs text-slate-400">
+            Log at least 2 entries to generate personalized spending & savings advice.
+          </div>`;
+        return;
+      }
+
+      const totalSaved = transactions.filter(t => t.type === 'savings').reduce((s, t) => s + t.amount, 0);
+      const totalExpense = transactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+
+      const insights = [];
+
+      if (totalSaved > 0 && totalExpense > 0) {
+        const savingsRatio = ((totalSaved / (totalSaved + totalExpense)) * 100).toFixed(0);
+        if (savingsRatio >= 20) {
+          insights.push({
+            type: 'success',
+            icon: 'award',
+            title: 'Great Savings Discipline!',
+            description: `You are saving ${savingsRatio}% of your total funds. Keeping your savings rate above 20% builds strong long-term security.`
+          });
+        } else {
+          insights.push({
+            type: 'tip',
+            icon: 'target',
+            title: 'Boost Your Savings Rate',
+            description: `Your current savings rate is ${savingsRatio}%. Try depositing a fixed amount into your Savings Vault every payday.`
+          });
+        }
+      }
+
+      const catTotals = {};
+      transactions.filter(t => t.type === 'expense').forEach(e => {
+        catTotals[e.categoryOrGoal] = (catTotals[e.categoryOrGoal] || 0) + e.amount;
+      });
+
+      const sortedCat = Object.entries(catTotals).sort((a, b) => b[1] - a[1]);
+      if (sortedCat.length > 0) {
+        const [topCat, topAmt] = sortedCat[0];
+        const topPct = ((topAmt / (totalExpense || 1)) * 100).toFixed(0);
+        
+        if (topPct > 35) {
+          insights.push({
+            type: 'warning',
+            icon: 'alert-triangle',
+            title: `High Spending in ${topCat}`,
+            description: `${topCat} accounts for ${topPct}% of expenses (${selectedCurrency} ${topAmt.toFixed(2)}). Consider capping this category.`
+          });
+        }
+      }
+
+      insights.forEach(item => {
+        const card = document.createElement('div');
+        let bgBorder = "bg-slate-950/80 border-slate-800 text-slate-300";
+        let iconColor = "text-emerald-400";
+
+        if (item.type === 'warning') {
+          bgBorder = "bg-amber-950/20 border-amber-800/40 text-amber-200";
+          iconColor = "text-amber-400";
+        } else if (item.type === 'success') {
+          bgBorder = "bg-emerald-950/20 border-emerald-800/40 text-emerald-200";
+          iconColor = "text-emerald-400";
+        } else if (item.type === 'tip') {
+          bgBorder = "bg-blue-950/20 border-blue-800/40 text-blue-200";
+          iconColor = "text-blue-400";
+        }
+
+        card.className = `p-3 rounded-xl border ${bgBorder} space-y-1 transition-all`;
+        card.innerHTML = `
+          <div class="flex items-center gap-2 font-semibold text-xs">
+            <i data-lucide="${item.icon}" class="w-4 h-4 ${iconColor}"></i>
+            <span>${item.title}</span>
+          </div>
+          <p class="text-[11px] leading-relaxed text-slate-400">${item.description}</p>
+        `;
+        insightsContainer.appendChild(card);
+      });
+
+      lucide.createIcons();
+    }
+
+    // --- Chart Rendering ---
+    function renderCharts() {
+      const categoryTotals = {};
+      transactions.filter(t => t.type === 'expense').forEach(e => {
+        categoryTotals[e.categoryOrGoal] = (categoryTotals[e.categoryOrGoal] || 0) + e.amount;
+      });
+
+      const labels = Object.keys(categoryTotals);
+      const dataValues = Object.values(categoryTotals);
+
+      const backgroundColors = labels.map(label => {
+        const preset = PRESET_CATEGORIES.find(c => c.name.toLowerCase() === label.toLowerCase());
+        return preset ? preset.color : '#64748b';
+      });
+
+      if (categoryChartInstance) {
+        categoryChartInstance.destroy();
+      }
+
+      const ctxCat = document.getElementById('categoryChart').getContext('2d');
+      categoryChartInstance = new Chart(ctxCat, {
+        type: 'doughnut',
+        data: {
+          labels: labels.length > 0 ? labels : ['No Expense Yet'],
+          datasets: [{
+            data: dataValues.length > 0 ? dataValues : [1],
+            backgroundColor: dataValues.length > 0 ? backgroundColors : ['#334155'],
+            borderWidth: 2,
+            borderColor: '#0f172a'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: { color: '#94a3b8', font: { size: 11 }, boxWidth: 12, padding: 12 }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const val = context.raw || 0;
+                  return ` ${context.label}: ${selectedCurrency} ${val.toFixed(2)}`;
+                }
+              }
+            }
+          },
+          cutout: '65%'
+        }
+      });
+
+      const totalSavingsAmt = transactions.filter(t => t.type === 'savings').reduce((s, t) => s + t.amount, 0);
+      const totalExpenseAmt = transactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+
+      if (trendChartInstance) {
+        trendChartInstance.destroy();
+      }
+
+      const ctxTrend = document.getElementById('trendChart').getContext('2d');
+      trendChartInstance = new Chart(ctxTrend, {
+        type: 'bar',
+        data: {
+          labels: ['Total Financial Allocation'],
+          datasets: [
+            {
+              label: 'Savings Deposits',
+              data: [totalSavingsAmt],
+              backgroundColor: '#10b981',
+              borderRadius: 6
+            },
+            {
+              label: 'Expenses',
+              data: [totalExpenseAmt],
+              backgroundColor: '#ef4444',
+              borderRadius: 6
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { ticks: { color: '#64748b' }, grid: { color: 'rgba(51, 65, 85, 0.2)' } },
+            y: { ticks: { color: '#64748b' }, grid: { color: 'rgba(51, 65, 85, 0.2)' } }
+          },
+          plugins: {
+            legend: { labels: { color: '#94a3b8', font: { size: 11 } } }
+          }
+        }
+      });
+    }
+
+    // Chart Switcher
+    chartViewCategoryBtn.addEventListener('click', () => {
+      categoryChartWrapper.classList.remove('hidden');
+      trendChartWrapper.classList.add('hidden');
+      chartViewCategoryBtn.className = "px-3 py-1 text-xs rounded-lg bg-emerald-600 text-white font-medium transition";
+      chartViewTrendBtn.className = "px-3 py-1 text-xs rounded-lg bg-slate-800 text-slate-400 hover:text-slate-200 font-medium transition";
+    });
+
+    chartViewTrendBtn.addEventListener('click', () => {
+      trendChartWrapper.classList.remove('hidden');
+      categoryChartWrapper.classList.add('hidden');
+      chartViewTrendBtn.className = "px-3 py-1 text-xs rounded-lg bg-emerald-600 text-white font-medium transition";
+      chartViewCategoryBtn.className = "px-3 py-1 text-xs rounded-lg bg-slate-800 text-slate-400 hover:text-slate-200 font-medium transition";
+    });
+
+    // --- New Account Modal Logic ---
+    const showAccountModal = () => accountModal.classList.remove('hidden');
+    const hideAccountModal = () => accountModal.classList.add('hidden');
+
+    openAccountModalBtn.addEventListener('click', showAccountModal);
+    openAccountModalBtn2.addEventListener('click', showAccountModal);
+    closeAccountModal.addEventListener('click', hideAccountModal);
+    cancelAccountBtn.addEventListener('click', hideAccountModal);
+
+    newAccountForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('newAccountName').value.trim();
+      const type = document.getElementById('newAccountType').value;
+      const initialBalance = parseFloat(document.getElementById('newAccountBalance').value) || 0;
+
+      if (!name) return;
+
+      const newAccount = {
+        id: 'acc_' + Date.now(),
+        name,
+        type,
+        balance: initialBalance,
+        iconType: selectedAccountIconType,
+        iconVal: selectedAccountIconVal
+      };
+
+      accounts.push(newAccount);
+      saveAccountsToStorage();
+      populateAccountSelect();
+      updateDashboard();
+
+      document.getElementById('newAccountName').value = '';
+      document.getElementById('newAccountBalance').value = '0.00';
+      hideAccountModal();
+      showToast(`Account "${name}" created!`, 'success');
+    });
+
+    // --- Google Sheets Modal Logic ---
+    openConfigBtn.addEventListener('click', () => configModal.classList.remove('hidden'));
+    closeConfigModal.addEventListener('click', () => configModal.classList.add('hidden'));
+
+    saveConfigBtn.addEventListener('click', () => {
+      const url = sheetUrlInput.value.trim();
+      googleSheetUrl = url;
+      localStorage.setItem('smartspend_sheet_url', url);
+
+      if (url) {
+        sheetStatusDot.className = "w-2 h-2 rounded-full bg-emerald-500";
+        showToast('Google Sheet Web App URL saved!', 'success');
+      } else {
+        sheetStatusDot.className = "w-2 h-2 rounded-full bg-amber-500";
+        showToast('Google Sheet URL cleared.', 'info');
+      }
+      configModal.classList.add('hidden');
+    });
+
+    copyScriptBtn.addEventListener('click', () => {
+      const scriptCode = `function doPost(e) {\n  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();\n  var data = JSON.parse(e.postData.contents);\n  if (sheet.getLastRow() === 0) {\n    sheet.appendRow(["ID", "Date", "Type", "Account", "Category/Goal", "Amount", "Currency", "Notes", "Timestamp"]);\n  }\n  sheet.appendRow([data.id, data.date, data.type, data.account, data.categoryOrGoal, data.amount, data.currency, data.notes, new Date()]);\n  return ContentService.createTextOutput(JSON.stringify({ "result": "success" })).setMimeType(ContentService.MimeType.JSON);\n}`;
+      
+      try {
+        const tempTextArea = document.createElement('textarea');
+        tempTextArea.value = scriptCode;
+        document.body.appendChild(tempTextArea);
+        tempTextArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempTextArea);
+        showToast('Apps Script code copied!', 'info');
+      } catch (err) {
+        showToast('Copy failed. Please copy text manually.', 'warning');
+      }
+    });
+
+    document.getElementById('testConnectionBtn').addEventListener('click', () => {
+      const url = sheetUrlInput.value.trim();
+      if (!url) {
+        showToast('Please enter Web App URL first', 'error');
+        return;
+      }
+      showToast('Testing endpoint connection...', 'info');
+      fetch(url, { method: 'GET', mode: 'no-cors' })
+        .then(() => showToast('Endpoint connected!', 'success'))
+        .catch(() => showToast('Connection failed. Verify URL', 'error'));
+    });
+
+    // --- Export CSV ---
+    exportCsvBtn.addEventListener('click', () => {
+      if (transactions.length === 0) {
+        showToast('No data available to export', 'warning');
+        return;
+      }
+
+      const headers = ['ID', 'Type', 'Date', 'Account', 'CategoryOrGoal', 'Amount', 'Currency', 'Notes'];
+      const csvRows = [headers.join(',')];
+
+      transactions.forEach(tx => {
+        const row = [
+          `"${tx.id}"`,
+          `"${tx.type}"`,
+          `"${tx.date}"`,
+          `"${tx.accountName.replace(/"/g, '""')}"`,
+          `"${tx.categoryOrGoal.replace(/"/g, '""')}"`,
+          tx.amount,
+          `"${tx.currency || selectedCurrency}"`,
+          `"${tx.notes.replace(/"/g, '""')}"`
+        ];
+        csvRows.push(row.join(','));
+      });
+
+      const csvContent = 'data:text/csv;charset=utf-8,' + csvRows.join('\n');
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement('a');
+      link.setAttribute('href', encodedUri);
+      link.setAttribute('download', `smartspend_history_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast('CSV Export downloaded', 'success');
+    });
+
+    // --- Notification Toasts ---
+    function showToast(message, type = 'info') {
+      const toastContainer = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      
+      let borderBg = 'bg-slate-900 border-slate-700 text-slate-100';
+      if (type === 'success') borderBg = 'bg-slate-900 border-emerald-500/50 text-emerald-400';
+      if (type === 'error') borderBg = 'bg-slate-900 border-red-500/50 text-red-400';
+      if (type === 'warning') borderBg = 'bg-slate-900 border-amber-500/50 text-amber-400';
+
+      toast.className = `px-4 py-2.5 rounded-xl border ${borderBg} shadow-xl text-xs font-medium flex items-center gap-2 transform transition-all duration-300 translate-y-2 opacity-0 pointer-events-auto`;
+      toast.innerHTML = `<span>${message}</span>`;
+
+      toastContainer.appendChild(toast);
+
+      setTimeout(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      }, 10);
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+  </script>
+</body>
+</html>

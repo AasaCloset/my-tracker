@@ -56,8 +56,7 @@
       <div class="flex items-center gap-3">
         <!-- User Profile Avatar Trigger -->
         <button id="openProfileModalBtn" class="relative group focus:outline-none" title="Customize Profile & Photo">
-          <div id="headerAvatarContainer" class="w-10 h-10 rounded-full border-2 border-emerald-500/50 bg-slate-800 flex items-center justify-center overflow-hidden shadow-md group-hover:border-emerald-400 transition">
-            <!-- Dynamic Avatar Content (Image or Icon) -->
+          <div id="headerAvatarContainer" class="w-10 h-10 rounded-full border-2 border-emerald-500/50 bg-slate-800 flex items-center justify-center overflow-hidden shadow-md group-hover:border-emerald-400 transition text-lg">
             <i data-lucide="user" class="w-5 h-5 text-emerald-400"></i>
           </div>
           <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 border-slate-900 rounded-full flex items-center justify-center text-[8px] text-slate-950 font-bold">+</span>
@@ -72,17 +71,17 @@
       </div>
 
       <div class="flex items-center gap-2 sm:gap-3">
-        <!-- Currency Selector with Flag Icons -->
-        <div class="flex items-center gap-1.5 bg-slate-800 px-2.5 py-1.5 rounded-xl border border-slate-700">
-          <i data-lucide="coins" class="w-4 h-4 text-amber-400"></i>
+        <!-- Main Display Base Currency Selector -->
+        <div class="flex items-center gap-1.5 bg-slate-800 px-2.5 py-1.5 rounded-xl border border-slate-700" title="Target Base Currency for Dashboard">
+          <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-emerald-400"></i>
           <select id="currencySelector" class="bg-transparent text-xs font-semibold text-slate-200 focus:outline-none cursor-pointer">
-            <option value="$" class="bg-slate-900">🇺🇸 USD ($)</option>
-            <option value="रू" class="bg-slate-900">🇳🇵 NPR (रू)</option>
-            <option value="₹" class="bg-slate-900">🇮🇳 INR (₹)</option>
-            <option value="€" class="bg-slate-900">🇪🇺 EUR (€)</option>
-            <option value="£" class="bg-slate-900">🇬🇧 GBP (£)</option>
-            <option value="AED" class="bg-slate-900">🇦🇪 AED</option>
             <option value="QAR" class="bg-slate-900">🇶🇦 QAR</option>
+            <option value="NPR" class="bg-slate-900">🇳🇵 NPR (रू)</option>
+            <option value="USD" class="bg-slate-900">🇺🇸 USD ($)</option>
+            <option value="INR" class="bg-slate-900">🇮🇳 INR (₹)</option>
+            <option value="EUR" class="bg-slate-900">🇪🇺 EUR (€)</option>
+            <option value="GBP" class="bg-slate-900">🇬🇧 GBP (£)</option>
+            <option value="AED" class="bg-slate-900">🇦🇪 AED</option>
           </select>
         </div>
 
@@ -102,47 +101,73 @@
     </div>
   </header>
 
+  <!-- Live Exchange Rate Ribbon -->
+  <div class="bg-slate-900/60 border-b border-slate-800 px-4 py-1.5 text-[11px] text-slate-400">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span class="font-medium text-slate-300">Live Exchange Context:</span>
+        <span id="liveRateText" class="font-mono text-emerald-400 font-semibold">1 QAR ≈ 36.81 NPR</span>
+      </div>
+      <div class="text-[10px] text-slate-500 hidden sm:block">
+        Auto-converts foreign currency amounts dynamically
+      </div>
+    </div>
+  </div>
+
   <!-- Main Container -->
   <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
     
     <!-- Notification Toast Container -->
     <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-    <!-- Overview Stats Bar (4 Metric Cards) -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Overview Stats Bar (5 Metric Cards) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
       
-      <!-- Total Savings Card -->
+      <!-- Total Cash Deposited -->
       <div class="bg-gradient-to-br from-emerald-950/60 to-slate-900 border border-emerald-500/30 rounded-2xl p-4 flex items-center justify-between shadow-lg shadow-emerald-950/20">
         <div class="space-y-1">
-          <p class="text-xs text-emerald-400 uppercase tracking-wider font-semibold">Total Savings</p>
-          <p class="text-2xl font-bold text-emerald-300" id="statTotalSavings">$0.00</p>
-          <p class="text-[10px] text-emerald-500/80">Saved across all funds</p>
+          <p class="text-xs text-emerald-400 uppercase tracking-wider font-semibold">Cash Deposited</p>
+          <p class="text-xl font-bold text-emerald-300 font-mono" id="statTotalDeposited">0.00 QAR</p>
+          <p class="text-[10px] text-emerald-500/80">Total income & deposits</p>
         </div>
         <div class="p-3 bg-emerald-500/20 text-emerald-400 rounded-xl border border-emerald-500/30">
-          <i data-lucide="vault" class="w-6 h-6"></i>
+          <i data-lucide="arrow-down-left" class="w-6 h-6"></i>
         </div>
       </div>
 
-      <!-- Total Expense Card -->
+      <!-- Total Cash Used / Spent -->
       <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex items-center justify-between">
         <div class="space-y-1">
-          <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Total Expenses</p>
-          <p class="text-2xl font-bold text-slate-100" id="statTotalExpenses">$0.00</p>
-          <p class="text-[10px] text-slate-500">Lifetime recorded</p>
+          <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Cash Used / Spent</p>
+          <p class="text-xl font-bold text-slate-100 font-mono" id="statTotalExpenses">0.00 QAR</p>
+          <p class="text-[10px] text-slate-500">Total spent</p>
         </div>
         <div class="p-3 bg-red-500/10 text-red-400 rounded-xl border border-red-500/20">
           <i data-lucide="arrow-up-right" class="w-6 h-6"></i>
         </div>
       </div>
 
-      <!-- Total Account Balance -->
+      <!-- Total Savings Card -->
       <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex items-center justify-between">
         <div class="space-y-1">
-          <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Liquid Balances</p>
-          <p class="text-2xl font-bold text-slate-100" id="statTotalBalance">$0.00</p>
-          <p class="text-[10px] text-slate-500">Available in accounts</p>
+          <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Total Savings</p>
+          <p class="text-xl font-bold text-slate-100 font-mono" id="statTotalSavings">0.00 QAR</p>
+          <p class="text-[10px] text-slate-500">Saved in vaults</p>
         </div>
         <div class="p-3 bg-blue-500/10 text-blue-400 rounded-xl border border-blue-500/20">
+          <i data-lucide="vault" class="w-6 h-6"></i>
+        </div>
+      </div>
+
+      <!-- Total Liquid Account Balance -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex items-center justify-between">
+        <div class="space-y-1">
+          <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Net Liquidity</p>
+          <p class="text-xl font-bold text-slate-100 font-mono" id="statTotalBalance">0.00 QAR</p>
+          <p class="text-[10px] text-slate-500">Available across accounts</p>
+        </div>
+        <div class="p-3 bg-purple-500/10 text-purple-400 rounded-xl border border-purple-500/20">
           <i data-lucide="wallet" class="w-6 h-6"></i>
         </div>
       </div>
@@ -150,11 +175,11 @@
       <!-- This Month Expenses -->
       <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex items-center justify-between">
         <div class="space-y-1">
-          <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold">This Month Spent</p>
-          <p class="text-2xl font-bold text-slate-100" id="statMonthExpenses">$0.00</p>
-          <p class="text-[10px] text-slate-500" id="statMonthName">Current month</p>
+          <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold">This Month Used</p>
+          <p class="text-xl font-bold text-slate-100 font-mono" id="statMonthExpenses">0.00 QAR</p>
+          <p class="text-[10px] text-slate-500" id="statMonthName">Current Month</p>
         </div>
-        <div class="p-3 bg-purple-500/10 text-purple-400 rounded-xl border border-purple-500/20">
+        <div class="p-3 bg-amber-500/10 text-amber-400 rounded-xl border border-amber-500/20">
           <i data-lucide="calendar" class="w-6 h-6"></i>
         </div>
       </div>
@@ -170,15 +195,19 @@
         <!-- Combined Transaction Form Card -->
         <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
           
-          <!-- Mode Switcher (Expense vs Savings Deposit) -->
-          <div class="flex p-1 bg-slate-950 rounded-xl border border-slate-800 mb-4">
-            <button id="modeExpenseBtn" type="button" class="flex-1 py-2 text-xs font-semibold rounded-lg bg-emerald-600 text-white shadow transition-all flex items-center justify-center gap-1.5">
-              <i data-lucide="minus-circle" class="w-4 h-4"></i>
-              Add Expense
+          <!-- Mode Switcher (Expense vs Deposit vs Savings) -->
+          <div class="grid grid-cols-3 p-1 bg-slate-950 rounded-xl border border-slate-800 mb-4 text-center">
+            <button id="modeExpenseBtn" type="button" class="py-2 text-xs font-semibold rounded-lg bg-emerald-600 text-white shadow transition-all flex items-center justify-center gap-1">
+              <i data-lucide="minus-circle" class="w-3.5 h-3.5"></i>
+              Cash Used
             </button>
-            <button id="modeSavingsBtn" type="button" class="flex-1 py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-slate-200 transition-all flex items-center justify-center gap-1.5">
-              <i data-lucide="piggy-bank" class="w-4 h-4 text-emerald-400"></i>
-              Add to Savings
+            <button id="modeDepositBtn" type="button" class="py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-slate-200 transition-all flex items-center justify-center gap-1">
+              <i data-lucide="plus-circle" class="w-3.5 h-3.5 text-emerald-400"></i>
+              Cash In
+            </button>
+            <button id="modeSavingsBtn" type="button" class="py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-slate-200 transition-all flex items-center justify-center gap-1">
+              <i data-lucide="piggy-bank" class="w-3.5 h-3.5 text-blue-400"></i>
+              Savings
             </button>
           </div>
 
@@ -194,7 +223,7 @@
               </div>
 
               <div>
-                <label class="block text-xs font-medium text-slate-300 mb-1" for="entryAccount">Source Account</label>
+                <label id="accountLabel" class="block text-xs font-medium text-slate-300 mb-1" for="entryAccount">Source Account (Deducted)</label>
                 <select id="entryAccount" required
                   class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-emerald-500 transition cursor-pointer">
                   <!-- Dynamic Accounts List -->
@@ -202,15 +231,32 @@
               </div>
             </div>
 
-            <!-- Amount Input (Fixed Flex Prefix Layout - Prevents Overlap) -->
+            <!-- Amount Input & Currency Switcher -->
             <div>
               <label class="block text-xs font-medium text-slate-300 mb-1" for="entryAmount">
-                Amount (<span class="currencySymbolDisplay">$</span>)
+                Amount & Currency
               </label>
               <div class="flex items-center rounded-xl bg-slate-950 border border-slate-800 focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500 transition overflow-hidden">
-                <span class="pl-3.5 pr-2.5 py-2.5 text-slate-400 font-bold text-xs shrink-0 select-none border-r border-slate-800/80 bg-slate-900/60 currencySymbolDisplay">$</span>
+                <!-- Currency dropdown for this specific entry -->
+                <select id="entryCurrency" class="bg-slate-900 text-xs font-semibold text-slate-200 py-2.5 px-3 focus:outline-none border-r border-slate-800 cursor-pointer shrink-0">
+                  <option value="QAR">🇶🇦 QAR</option>
+                  <option value="NPR">🇳🇵 NPR (रू)</option>
+                  <option value="USD">🇺🇸 USD ($)</option>
+                  <option value="INR">🇮🇳 INR (₹)</option>
+                  <option value="EUR">🇪🇺 EUR (€)</option>
+                  <option value="GBP">🇬🇧 GBP (£)</option>
+                  <option value="AED">🇦🇪 AED</option>
+                </select>
                 <input type="number" id="entryAmount" step="0.01" min="0.01" placeholder="0.00" required
-                  class="w-full bg-transparent px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none" />
+                  class="w-full bg-transparent px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none font-mono" />
+              </div>
+
+              <!-- Automatic Currency Exchange Preview Box -->
+              <div id="liveExchangeBox" class="mt-2 p-2 bg-slate-950/80 border border-emerald-500/20 rounded-lg flex items-center justify-between text-xs hidden">
+                <span class="text-slate-400 flex items-center gap-1">
+                  <i data-lucide="refresh-cw" class="w-3 h-3 text-emerald-400"></i> Auto Exchange:
+                </span>
+                <span id="liveExchangeText" class="font-mono font-bold text-emerald-300">0.00 NPR</span>
               </div>
             </div>
 
@@ -240,6 +286,13 @@
                 class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-500 transition" />
             </div>
 
+            <!-- Deposit Source Label (Hidden unless mode = deposit) -->
+            <div id="depositSourceGroup" class="hidden">
+              <label class="block text-xs font-medium text-slate-300 mb-1" for="depositSourceInput">Deposit Source / Income Title</label>
+              <input type="text" id="depositSourceInput" placeholder="e.g. Monthly Salary, Remittance, Client Payment"
+                class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-500 transition" />
+            </div>
+
             <!-- Notes / Description -->
             <div>
               <label class="block text-xs font-medium text-slate-300 mb-1" for="entryNotes">Notes / Description</label>
@@ -251,7 +304,7 @@
             <button type="submit" id="submitBtn"
               class="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-semibold rounded-xl shadow-lg shadow-emerald-900/30 flex items-center justify-center gap-2 transition-all transform active:scale-[0.98]">
               <i data-lucide="check-circle-2" class="w-4 h-4"></i>
-              <span id="submitBtnText">Record Expense</span>
+              <span id="submitBtnText">Record Cash Used</span>
             </button>
           </form>
         </section>
@@ -277,12 +330,10 @@
         <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
           <div class="flex items-center gap-2 mb-3 pb-3 border-b border-slate-800">
             <i data-lucide="sparkles" class="w-5 h-5 text-amber-400"></i>
-            <h2 class="text-sm font-semibold text-slate-100">Smart Financial Advice</h2>
+            <h2 class="text-sm font-semibold text-slate-100">Smart Financial Insights</h2>
           </div>
           <div id="insightsContainer" class="space-y-3">
-            <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800 text-xs text-slate-400">
-              Add your first expense or savings deposit to generate tailored insights.
-            </div>
+            <!-- Dynamic Insights -->
           </div>
         </section>
 
@@ -296,7 +347,7 @@
           <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
             <h2 class="text-sm font-semibold flex items-center gap-2 text-slate-100">
               <i data-lucide="bar-chart-3" class="w-4 h-4 text-purple-400"></i>
-              Financial Overview
+              Financial Analytics
             </h2>
             <div class="flex gap-2">
               <button id="chartViewCategoryBtn" class="px-3 py-1 text-xs rounded-lg bg-emerald-600 text-white font-medium transition">Expenses Breakdown</button>
@@ -320,7 +371,7 @@
           <div class="flex items-center justify-between pb-3 border-b border-slate-800">
             <div class="flex items-center gap-2">
               <i data-lucide="piggy-bank" class="w-5 h-5 text-emerald-400"></i>
-              <h2 class="text-sm font-semibold text-slate-100">Savings Funds & Deposits</h2>
+              <h2 class="text-sm font-semibold text-slate-100">Savings Funds & Goals</h2>
             </div>
             <span class="text-xs text-slate-400" id="savingsVaultCount">0 Goals</span>
           </div>
@@ -337,6 +388,7 @@
             <!-- Table Tabs -->
             <div class="flex gap-2 bg-slate-950 p-1 rounded-xl border border-slate-800">
               <button id="tableTabAll" class="px-3 py-1 text-xs font-medium rounded-lg bg-emerald-600 text-white transition">All Entries</button>
+              <button id="tableTabDeposits" class="px-3 py-1 text-xs font-medium text-slate-400 hover:text-slate-200 transition">Deposits</button>
               <button id="tableTabExpenses" class="px-3 py-1 text-xs font-medium text-slate-400 hover:text-slate-200 transition">Expenses</button>
               <button id="tableTabSavings" class="px-3 py-1 text-xs font-medium text-slate-400 hover:text-slate-200 transition">Savings</button>
             </div>
@@ -362,9 +414,9 @@
                   <th class="py-3 px-3">Date</th>
                   <th class="py-3 px-3">Type</th>
                   <th class="py-3 px-3">Account</th>
-                  <th class="py-3 px-3">Category / Goal</th>
-                  <th class="py-3 px-3">Notes</th>
-                  <th class="py-3 px-3 text-right">Amount</th>
+                  <th class="py-3 px-3">Category / Details</th>
+                  <th class="py-3 px-3 font-mono">Original Amount</th>
+                  <th class="py-3 px-3 text-right font-mono">Converted Amount</th>
                   <th class="py-3 px-3 text-center">Action</th>
                 </tr>
               </thead>
@@ -373,7 +425,7 @@
               </tbody>
             </table>
             
-            <div id="emptyTableState" class="py-12 text-center text-slate-500 space-y-2">
+            <div id="emptyTableState" class="py-12 text-center text-slate-500 space-y-2 hidden">
               <i data-lucide="receipt" class="w-10 h-10 mx-auto stroke-1 text-slate-600"></i>
               <p class="text-sm">No transaction history found.</p>
               <p class="text-xs text-slate-600">Start logging your expenses or savings above.</p>
@@ -385,20 +437,19 @@
     </div>
   </main>
 
-  <!-- User Profile & Photo Customization Modal -->
+  <!-- User Profile Modal -->
   <div id="profileModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5">
       <div class="flex items-center justify-between pb-3 border-b border-slate-800">
         <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
           <i data-lucide="user-cog" class="w-5 h-5 text-emerald-400"></i>
-          Profile & Photo Customization
+          Profile Customization
         </h3>
         <button id="closeProfileModal" class="text-slate-400 hover:text-slate-200">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
-      <!-- Live Avatar Preview Box -->
       <div class="flex flex-col items-center justify-center space-y-2">
         <div id="profilePreviewContainer" class="w-20 h-20 rounded-full border-4 border-emerald-500/60 bg-slate-800 flex items-center justify-center overflow-hidden text-3xl shadow-xl">
           <i data-lucide="user" class="w-10 h-10 text-emerald-400"></i>
@@ -406,14 +457,12 @@
         <p class="text-xs text-slate-400">Your App Avatar & Identity</p>
       </div>
 
-      <!-- User Name Field -->
       <div>
         <label class="block text-xs font-medium text-slate-300 mb-1" for="userNameInput">Your Name / App Title</label>
-        <input type="text" id="userNameInput" placeholder="e.g. Alex's Spending"
+        <input type="text" id="userNameInput" placeholder="e.g. Alex Vance"
           class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-500" />
       </div>
 
-      <!-- Tab: Upload Custom Photo OR Choose Icon/Emoji -->
       <div class="space-y-3">
         <label class="block text-xs font-medium text-slate-300">Choose Profile Picture Source</label>
         
@@ -426,7 +475,6 @@
           </button>
         </div>
 
-        <!-- Photo Upload Box -->
         <div id="avatarUploadSection" class="p-4 bg-slate-950 border border-dashed border-slate-800 rounded-xl text-center space-y-2">
           <i data-lucide="upload-cloud" class="w-8 h-8 mx-auto text-emerald-400 stroke-1"></i>
           <p class="text-xs text-slate-300">Upload a custom profile photo</p>
@@ -438,10 +486,9 @@
           </button>
         </div>
 
-        <!-- Preset Avatar Selector Box (Hidden initially) -->
         <div id="avatarPresetSection" class="hidden p-3 bg-slate-950 border border-slate-800 rounded-xl space-y-2">
           <p class="text-[11px] text-slate-400">Pick an avatar icon or emoji:</p>
-          <div id="presetAvatarGrid" class="grid grid-cols-6 gap-2">
+          <div id="presetAvatarGrid" class="grid grid-cols-6 gap-2 text-center text-xl">
             <!-- Dynamic Avatar Presets -->
           </div>
         </div>
@@ -470,7 +517,7 @@
       <form id="newAccountForm" class="space-y-4">
         <div>
           <label class="block text-xs font-medium text-slate-300 mb-1" for="newAccountName">Account Name</label>
-          <input type="text" id="newAccountName" placeholder="e.g. Nabil Bank, Cash Wallet, Emergency Fund" required
+          <input type="text" id="newAccountName" placeholder="e.g. QNB Account, Cash Wallet, NPR Savings" required
             class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-500" />
         </div>
 
@@ -489,7 +536,7 @@
         <div>
           <label class="block text-xs font-medium text-slate-300 mb-1">Account Icon / Photo</label>
           <div class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl space-y-2">
-            <div id="accountIconGrid" class="flex flex-wrap gap-2">
+            <div id="accountIconGrid" class="flex flex-wrap gap-2 text-base">
               <!-- Preset Account Icon Chips -->
             </div>
             <div class="pt-1 flex items-center justify-between">
@@ -504,12 +551,17 @@
 
         <div>
           <label class="block text-xs font-medium text-slate-300 mb-1" for="newAccountBalance">
-            Initial Starting Balance (<span class="currencySymbolDisplay">$</span>)
+            Initial Balance
           </label>
           <div class="flex items-center rounded-xl bg-slate-950 border border-slate-800 focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500 transition overflow-hidden">
-            <span class="pl-3.5 pr-2.5 py-2.5 text-slate-400 font-bold text-xs shrink-0 select-none border-r border-slate-800/80 bg-slate-900/60 currencySymbolDisplay">$</span>
+            <select id="newAccountCurrency" class="bg-slate-900 text-xs font-semibold text-slate-200 py-2.5 px-3 focus:outline-none border-r border-slate-800">
+              <option value="QAR">QAR</option>
+              <option value="NPR">NPR</option>
+              <option value="USD">USD</option>
+              <option value="INR">INR</option>
+            </select>
             <input type="number" id="newAccountBalance" step="0.01" value="0.00" placeholder="0.00" required
-              class="w-full bg-transparent px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none" />
+              class="w-full bg-transparent px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none font-mono" />
           </div>
         </div>
 
@@ -521,1162 +573,936 @@
     </div>
   </div>
 
+  <!-- Edit Account Modal -->
+  <div id="editAccountModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
+          <i data-lucide="edit-3" class="w-5 h-5 text-emerald-400"></i>
+          Edit Account
+        </h3>
+        <button id="closeEditAccountModal" class="text-slate-400 hover:text-slate-200">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="editAccountForm" class="space-y-4">
+        <input type="hidden" id="editAccountId" />
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1" for="editAccountName">Account Name</label>
+          <input type="text" id="editAccountName" required
+            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-500" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1" for="editAccountBalance">
+            Current Balance
+          </label>
+          <div class="flex items-center rounded-xl bg-slate-950 border border-slate-800 focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500 transition overflow-hidden">
+            <select id="editAccountCurrency" class="bg-slate-900 text-xs font-semibold text-slate-200 py-2.5 px-3 focus:outline-none border-r border-slate-800">
+              <option value="QAR">QAR</option>
+              <option value="NPR">NPR</option>
+              <option value="USD">USD</option>
+              <option value="INR">INR</option>
+            </select>
+            <input type="number" id="editAccountBalance" step="0.01" required
+              class="w-full bg-transparent px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none font-mono" />
+          </div>
+        </div>
+
+        <div class="flex justify-between items-center pt-2">
+          <button type="button" id="deleteAccountBtn" class="px-3 py-2 text-xs bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded-xl border border-red-500/30 font-medium flex items-center gap-1">
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete
+          </button>
+          <div class="flex gap-2">
+            <button type="button" id="cancelEditAccountBtn" class="px-4 py-2 text-xs bg-slate-800 text-slate-300 rounded-xl hover:bg-slate-700">Cancel</button>
+            <button type="submit" class="px-4 py-2 text-xs bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-500">Save Changes</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Google Sheets Integration Modal -->
   <div id="configModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between pb-3 border-b border-slate-800">
         <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
-          <i data-lucide="file-spreadsheet" class="w-5 h-5 text-emerald-400"></i>
-          Google Sheets Integration Setup
+          <i data-lucide="sheet" class="w-5 h-5 text-emerald-400"></i>
+          Google Sheets Live Backup Integration
         </h3>
         <button id="closeConfigModal" class="text-slate-400 hover:text-slate-200">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
-      <p class="text-xs text-slate-300 leading-relaxed">
-        Sync expenses and savings deposits directly into your personal Google Sheet using Google Apps Script!
-      </p>
+      <div class="space-y-3 text-xs text-slate-300">
+        <p>Sync all your transaction data directly to a personal Google Sheet automatically in real time.</p>
+        
+        <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-2">
+          <h4 class="font-semibold text-emerald-400 flex items-center gap-1.5">
+            <i data-lucide="terminal" class="w-4 h-4"></i> Setup Apps Script Endpoint:
+          </h4>
+          <ol class="list-decimal list-inside space-y-1 text-slate-400 text-[11px]">
+            <li>Open a Google Sheet & go to <strong>Extensions &gt; Apps Script</strong></li>
+            <li>Paste the generated Apps Script template below and Save</li>
+            <li>Click <strong>Deploy &gt; New Deployment &gt; Web App</strong></li>
+            <li>Set "Who has access" to <strong>Anyone</strong> and copy the Web App URL</li>
+          </ol>
+        </div>
 
-      <!-- Apps Script Guide -->
-      <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-2 text-xs text-slate-400">
-        <p class="font-semibold text-emerald-400">3-Step Setup Instructions:</p>
-        <ol class="list-decimal list-inside space-y-1.5 pl-1">
-          <li>Create a Google Sheet and click <span class="text-slate-200 font-mono">Extensions > Apps Script</span>.</li>
-          <li>Paste the code snippet below and click <span class="text-slate-200">Deploy > New deployment</span>.</li>
-          <li>Select <span class="text-slate-200">Web App</span>, set <i>Who has access</i> to <span class="text-emerald-400">Anyone</span>, deploy, and paste the Web App URL below.</li>
-        </ol>
-      </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1" for="sheetScriptUrlInput">Google Apps Script Web App URL</label>
+          <input type="url" id="sheetScriptUrlInput" placeholder="https://script.google.com/macros/s/.../exec"
+            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-500 font-mono" />
+        </div>
 
-      <!-- Script Code Snippet -->
-      <div class="relative">
-        <pre class="bg-slate-950 border border-slate-800 p-3 rounded-xl text-[11px] font-mono text-slate-300 overflow-x-auto max-h-36 selection:bg-emerald-900">
-function doPost(e) {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  var data = JSON.parse(e.postData.contents);
-  
-  if (sheet.getLastRow() === 0) {
-    sheet.appendRow(["ID", "Date", "Type", "Account", "Category/Goal", "Amount", "Currency", "Notes", "Timestamp"]);
-  }
-  
-  sheet.appendRow([
-    data.id,
-    data.date,
-    data.type,
-    data.account,
-    data.categoryOrGoal,
-    data.amount,
-    data.currency,
-    data.notes,
-    new Date()
-  ]);
-  
-  return ContentService
-    .createTextOutput(JSON.stringify({ "result": "success" }))
-    .setMimeType(ContentService.MimeType.JSON);
-}</pre>
-        <button id="copyScriptBtn" class="absolute top-2 right-2 px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 rounded border border-slate-700 flex items-center gap-1">
-          <i data-lucide="copy" class="w-3 h-3"></i> Copy Code
-        </button>
-      </div>
-
-      <!-- Input Field -->
-      <div>
-        <label class="block text-xs font-medium text-slate-300 mb-1" for="sheetUrlInput">Google Apps Script Web App URL</label>
-        <input type="url" id="sheetUrlInput" placeholder="https://script.google.com/macros/s/.../exec"
-          class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-500 font-mono" />
-      </div>
-
-      <div class="flex items-center justify-between pt-2">
-        <button id="testConnectionBtn" type="button" class="px-3 py-2 text-xs text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-xl border border-slate-700">
-          Test Endpoint
-        </button>
-        <div class="flex gap-2">
-          <button id="saveConfigBtn" type="button" class="px-4 py-2 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-xl">
-            Save Web App Link
+        <div class="pt-2 flex flex-col gap-2">
+          <button type="button" id="copyAppsScriptBtn" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-xl border border-slate-700 flex items-center justify-center gap-2 transition">
+            <i data-lucide="copy" class="w-4 h-4 text-emerald-400"></i>
+            Copy Apps Script Code Template
+          </button>
+          
+          <button type="button" id="testSyncBtn" class="w-full py-2 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 font-medium rounded-xl border border-emerald-500/30 flex items-center justify-center gap-2 transition">
+            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+            Test Link & Push Current Data
           </button>
         </div>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
+        <button type="button" id="saveConfigBtn" class="px-5 py-2 text-xs bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-500">Save Configuration</button>
       </div>
     </div>
   </div>
 
-  <!-- JavaScript Application Logic -->
+  <!-- JavaScript Engine & Logic -->
   <script>
-    // --- Preset Expense Categories ---
-    const PRESET_CATEGORIES = [
-      { name: 'Groceries & Food', color: '#10b981' },
-      { name: 'Dining & Snacks', color: '#f59e0b' },
-      { name: 'Rent & Housing', color: '#3b82f6' },
-      { name: 'Transportation & Fuel', color: '#8b5cf6' },
-      { name: 'Bills & Utilities', color: '#06b6d4' },
-      { name: 'Entertainment & Leisure', color: '#ec4899' },
-      { name: 'Healthcare & Fitness', color: '#ef4444' },
-      { name: 'Shopping & Clothes', color: '#6366f1' },
-      { name: 'Education & Books', color: '#84cc16' },
-      { name: 'Travel & Trips', color: '#f97316' },
-      { name: 'Other Expenses', color: '#64748b' }
+    // --- APP STATE & STORAGE CONTROLLER ---
+    const DEFAULT_EXCHANGE_RATES = {
+      QAR: 1.0,
+      NPR: 36.81,
+      USD: 0.27,
+      INR: 22.85,
+      EUR: 0.25,
+      GBP: 0.21,
+      AED: 1.0
+    };
+
+    const DEFAULT_CATEGORIES = [
+      "Groceries & Food", "Remittance / Family Transfer", "Rent & Housing", 
+      "Utilities & Bills", "Dining Out & Cafes", "Transport & Fuel", 
+      "Shopping & Gear", "Healthcare & Medical", "Entertainment", "Personal Care"
     ];
 
-    const PRESET_AVATARS = ['🦊', '🦁', '🦉', '🚀', '👑', '💼', '💰', '⚡', '🎯', '💎', '🐱', '🕶️'];
-    const PRESET_ACCOUNT_ICONS = ['wallet', 'landmark', 'vault', 'credit-card', 'piggy-bank', 'briefcase', 'car', 'shopping-bag', 'gift', 'coins'];
-
-    // --- State Variables ---
-    let accounts = [];
-    let transactions = [];
-    let userProfile = {
-      name: 'SmartSpend',
-      type: 'icon', // 'image', 'emoji', 'icon'
-      data: 'user'
+    let state = {
+      user: JSON.parse(localStorage.getItem('smartspend_user')) || {
+        name: "SmartSpend",
+        avatarType: "icon", // "icon", "preset", "custom"
+        avatarVal: "user"
+      },
+      baseCurrency: localStorage.getItem('smartspend_currency') || "QAR",
+      accounts: JSON.parse(localStorage.getItem('smartspend_accounts')) || [
+        { id: 'acc-1', name: 'Main QNB Bank', type: 'Bank', balance: 5000.00, currency: 'QAR', icon: '🏛️' },
+        { id: 'acc-2', name: 'Cash Wallet', type: 'Cash', balance: 450.00, currency: 'QAR', icon: '💵' },
+        { id: 'acc-3', name: 'NPR Home Account', type: 'Savings', balance: 125000.00, currency: 'NPR', icon: '🇳🇵' }
+      ],
+      transactions: JSON.parse(localStorage.getItem('smartspend_txs')) || [],
+      googleSheetUrl: localStorage.getItem('smartspend_sheet_url') || "",
+      activeTab: 'all',
+      searchQuery: ''
     };
-    let googleSheetUrl = '';
-    let selectedCurrency = '$';
-    let currentFilterTab = 'all';
-
-    let selectedAccountIconType = 'icon';
-    let selectedAccountIconVal = 'wallet';
-
-    let tempProfileState = { ...userProfile };
 
     let categoryChartInstance = null;
     let trendChartInstance = null;
 
-    // --- DOM References ---
-    const transactionForm = document.getElementById('transactionForm');
-    const entryTypeInput = document.getElementById('entryType');
-    const entryDate = document.getElementById('entryDate');
-    const entryAccount = document.getElementById('entryAccount');
-    const entryAmount = document.getElementById('entryAmount');
-    const categoryGroup = document.getElementById('categoryGroup');
-    const categoryInput = document.getElementById('categoryInput');
-    const categoryDropdown = document.getElementById('categoryDropdown');
-    const categoryOptionsList = document.getElementById('categoryOptionsList');
-    const toggleCategoryDropdown = document.getElementById('toggleCategoryDropdown');
-    const savingsGoalGroup = document.getElementById('savingsGoalGroup');
-    const savingsGoalInput = document.getElementById('savingsGoalInput');
-    const entryNotes = document.getElementById('entryNotes');
-    const submitBtn = document.getElementById('submitBtn');
-    const submitBtnText = document.getElementById('submitBtnText');
+    // --- HELPER UTILITIES ---
+    function convertCurrency(amount, fromCurr, toCurr) {
+      if (fromCurr === toCurr) return amount;
+      const amountInBase = amount / (DEFAULT_EXCHANGE_RATES[fromCurr] || 1);
+      return amountInBase * (DEFAULT_EXCHANGE_RATES[toCurr] || 1);
+    }
 
-    // Mode Buttons
-    const modeExpenseBtn = document.getElementById('modeExpenseBtn');
-    const modeSavingsBtn = document.getElementById('modeSavingsBtn');
+    function formatMoney(amount, currency = state.baseCurrency) {
+      const symbols = { QAR: 'QAR', NPR: 'रू', USD: '$', INR: '₹', EUR: '€', GBP: '£', AED: 'AED' };
+      const formatted = new Intl.NumberFormat('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(amount);
+      return `${formatted} ${symbols[currency] || currency}`;
+    }
 
-    // Stats
-    const statTotalSavings = document.getElementById('statTotalSavings');
-    const statTotalExpenses = document.getElementById('statTotalExpenses');
-    const statTotalBalance = document.getElementById('statTotalBalance');
-    const statMonthExpenses = document.getElementById('statMonthExpenses');
-    const statMonthName = document.getElementById('statMonthName');
-
-    // Accounts & Vaults
-    const accountsListContainer = document.getElementById('accountsListContainer');
-    const savingsVaultsContainer = document.getElementById('savingsVaultsContainer');
-    const savingsVaultCount = document.getElementById('savingsVaultCount');
-    const insightsContainer = document.getElementById('insightsContainer');
-
-    // Table
-    const transactionTableBody = document.getElementById('transactionTableBody');
-    const emptyTableState = document.getElementById('emptyTableState');
-    const searchInput = document.getElementById('searchInput');
-    const tableTabAll = document.getElementById('tableTabAll');
-    const tableTabExpenses = document.getElementById('tableTabExpenses');
-    const tableTabSavings = document.getElementById('tableTabSavings');
-    const currencySelector = document.getElementById('currencySelector');
-
-    // User Profile Elements
-    const openProfileModalBtn = document.getElementById('openProfileModalBtn');
-    const profileModal = document.getElementById('profileModal');
-    const closeProfileModal = document.getElementById('closeProfileModal');
-    const cancelProfileBtn = document.getElementById('cancelProfileBtn');
-    const saveProfileBtn = document.getElementById('saveProfileBtn');
-    const headerAvatarContainer = document.getElementById('headerAvatarContainer');
-    const headerUserName = document.getElementById('headerUserName');
-    const profilePreviewContainer = document.getElementById('profilePreviewContainer');
-    const userNameInput = document.getElementById('userNameInput');
-    const profilePhotoInput = document.getElementById('profilePhotoInput');
-    const avatarTabUploadBtn = document.getElementById('avatarTabUploadBtn');
-    const avatarTabPresetBtn = document.getElementById('avatarTabPresetBtn');
-    const avatarUploadSection = document.getElementById('avatarUploadSection');
-    const avatarPresetSection = document.getElementById('avatarPresetSection');
-    const presetAvatarGrid = document.getElementById('presetAvatarGrid');
-
-    // Modals
-    const accountModal = document.getElementById('accountModal');
-    const openAccountModalBtn = document.getElementById('openAccountModalBtn');
-    const openAccountModalBtn2 = document.getElementById('openAccountModalBtn2');
-    const closeAccountModal = document.getElementById('closeAccountModal');
-    const cancelAccountBtn = document.getElementById('cancelAccountBtn');
-    const newAccountForm = document.getElementById('newAccountForm');
-    const accountIconGrid = document.getElementById('accountIconGrid');
-    const accountIconFileInput = document.getElementById('accountIconFileInput');
-
-    const configModal = document.getElementById('configModal');
-    const openConfigBtn = document.getElementById('openConfigBtn');
-    const closeConfigModal = document.getElementById('closeConfigModal');
-    const saveConfigBtn = document.getElementById('saveConfigBtn');
-    const sheetUrlInput = document.getElementById('sheetUrlInput');
-    const sheetStatusDot = document.getElementById('sheetStatusDot');
-    const copyScriptBtn = document.getElementById('copyScriptBtn');
-    const exportCsvBtn = document.getElementById('exportCsvBtn');
-
-    // Set Default Date to Today
-    entryDate.value = new Date().toISOString().split('T')[0];
-
-    // --- App Init ---
-    window.addEventListener('DOMContentLoaded', () => {
+    function showToast(message, type = 'success') {
+      const toastContainer = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `px-4 py-2.5 rounded-xl border shadow-xl text-xs font-medium flex items-center gap-2 transition-all transform duration-300 opacity-0 translate-y-2 pointer-events-auto ${
+        type === 'success' ? 'bg-emerald-950 border-emerald-500/50 text-emerald-200' : 'bg-red-950 border-red-500/50 text-red-200'
+      }`;
+      toast.innerHTML = `<i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}" class="w-4 h-4"></i> ${message}`;
+      toastContainer.appendChild(toast);
       lucide.createIcons();
-      loadStoredData();
-      renderCategoryDropdownOptions('');
-      renderAccountIconGrid();
-      renderPresetAvatarGrid();
-      updateDashboard();
-    });
 
-    // --- LocalStorage Handling ---
-    function loadStoredData() {
-      try {
-        const storedProfile = localStorage.getItem('smartspend_profile');
-        if (storedProfile) {
-          userProfile = JSON.parse(storedProfile);
-        }
-        renderUserProfileHeader();
+      setTimeout(() => {
+        toast.classList.remove('opacity-0', 'translate-y-2');
+      }, 50);
 
-        const storedAccounts = localStorage.getItem('smartspend_accounts');
-        if (storedAccounts) {
-          accounts = JSON.parse(storedAccounts);
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    function saveState() {
+      localStorage.setItem('smartspend_user', JSON.stringify(state.user));
+      localStorage.setItem('smartspend_currency', state.baseCurrency);
+      localStorage.setItem('smartspend_accounts', JSON.stringify(state.accounts));
+      localStorage.setItem('smartspend_txs', JSON.stringify(state.transactions));
+      localStorage.setItem('smartspend_sheet_url', state.googleSheetUrl);
+      renderAll();
+    }
+
+    // --- UI RENDER FUNCTIONS ---
+    function renderProfile() {
+      const userNameEl = document.getElementById('headerUserName');
+      const headerAvatar = document.getElementById('headerAvatarContainer');
+      const previewAvatar = document.getElementById('profilePreviewContainer');
+
+      userNameEl.textContent = state.user.name || "SmartSpend";
+
+      const renderAvatarHtml = (container) => {
+        if (state.user.avatarType === 'custom') {
+          container.innerHTML = `<img src="${state.user.avatarVal}" class="w-full h-full object-cover" />`;
+        } else if (state.user.avatarType === 'preset') {
+          container.innerHTML = `<span class="text-xl">${state.user.avatarVal}</span>`;
         } else {
-          // Default starting accounts
-          accounts = [
-            { id: 'acc_1', name: 'Main Bank Account', type: 'Bank', balance: 0, iconType: 'icon', iconVal: 'landmark' },
-            { id: 'acc_2', name: 'Cash Wallet', type: 'Cash', balance: 0, iconType: 'icon', iconVal: 'wallet' },
-            { id: 'acc_3', name: 'Savings Vault', type: 'Savings', balance: 0, iconType: 'icon', iconVal: 'vault' }
-          ];
-          saveAccountsToStorage();
+          container.innerHTML = `<i data-lucide="user" class="w-5 h-5 text-emerald-400"></i>`;
         }
-
-        const storedTx = localStorage.getItem('smartspend_transactions');
-        if (storedTx) {
-          transactions = JSON.parse(storedTx);
-        } else {
-          transactions = [];
-          saveTransactionsToStorage();
-        }
-
-        googleSheetUrl = localStorage.getItem('smartspend_sheet_url') || '';
-        if (googleSheetUrl) {
-          sheetUrlInput.value = googleSheetUrl;
-          sheetStatusDot.className = "w-2 h-2 rounded-full bg-emerald-500";
-        }
-
-        const storedCurrency = localStorage.getItem('smartspend_currency');
-        if (storedCurrency) {
-          selectedCurrency = storedCurrency;
-          currencySelector.value = storedCurrency;
-        }
-        updateCurrencyDisplays();
-        populateAccountSelect();
-
-      } catch (e) {
-        console.error("Storage load error:", e);
-      }
-    }
-
-    function saveAccountsToStorage() {
-      localStorage.setItem('smartspend_accounts', JSON.stringify(accounts));
-    }
-
-    function saveTransactionsToStorage() {
-      localStorage.setItem('smartspend_transactions', JSON.stringify(transactions));
-    }
-
-    function saveProfileToStorage() {
-      localStorage.setItem('smartspend_profile', JSON.stringify(userProfile));
-    }
-
-    // --- User Profile Avatar Functions ---
-    function renderUserProfileHeader() {
-      headerUserName.textContent = userProfile.name || 'SmartSpend';
-      renderAvatarToContainer(headerAvatarContainer, userProfile, 'w-5 h-5 text-emerald-400');
-    }
-
-    function renderAvatarToContainer(container, profileObj, iconClass = 'w-6 h-6 text-emerald-400') {
-      container.innerHTML = '';
-      if (profileObj.type === 'image') {
-        const img = document.createElement('img');
-        img.src = profileObj.data;
-        img.alt = 'User Avatar';
-        img.className = 'w-full h-full object-cover';
-        container.appendChild(img);
-      } else if (profileObj.type === 'emoji') {
-        const span = document.createElement('span');
-        span.className = 'text-xl leading-none';
-        span.textContent = profileObj.data;
-        container.appendChild(span);
-      } else {
-        const icon = document.createElement('i');
-        icon.setAttribute('data-lucide', profileObj.data || 'user');
-        icon.className = iconClass;
-        container.appendChild(icon);
-        lucide.createIcons();
-      }
-    }
-
-    function renderPresetAvatarGrid() {
-      presetAvatarGrid.innerHTML = '';
-      PRESET_AVATARS.forEach(emoji => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 hover:border-emerald-500 flex items-center justify-center text-lg transition';
-        btn.textContent = emoji;
-        btn.addEventListener('click', () => {
-          tempProfileState.type = 'emoji';
-          tempProfileState.data = emoji;
-          renderAvatarToContainer(profilePreviewContainer, tempProfileState, 'w-8 h-8 text-emerald-400');
-        });
-        presetAvatarGrid.appendChild(btn);
-      });
-    }
-
-    openProfileModalBtn.addEventListener('click', () => {
-      tempProfileState = { ...userProfile };
-      userNameInput.value = userProfile.name || '';
-      renderAvatarToContainer(profilePreviewContainer, tempProfileState, 'w-8 h-8 text-emerald-400');
-      profileModal.classList.remove('hidden');
-    });
-
-    closeProfileModal.addEventListener('click', () => profileModal.classList.add('hidden'));
-    cancelProfileBtn.addEventListener('click', () => profileModal.classList.add('hidden'));
-
-    avatarTabUploadBtn.addEventListener('click', () => {
-      avatarUploadSection.classList.remove('hidden');
-      avatarPresetSection.classList.add('hidden');
-      avatarTabUploadBtn.className = "py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 text-white transition";
-      avatarTabPresetBtn.className = "py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-slate-200 transition";
-    });
-
-    avatarTabPresetBtn.addEventListener('click', () => {
-      avatarPresetSection.classList.remove('hidden');
-      avatarUploadSection.classList.add('hidden');
-      avatarTabPresetBtn.className = "py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 text-white transition";
-      avatarTabUploadBtn.className = "py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-slate-200 transition";
-    });
-
-    // Profile Photo File Upload Handler
-    profilePhotoInput.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        if (file.size > 2 * 1024 * 1024) {
-          showToast('Image size should be under 2MB', 'error');
-          return;
-        }
-        const reader = new FileReader();
-        reader.onload = function(evt) {
-          tempProfileState.type = 'image';
-          tempProfileState.data = evt.target.result;
-          renderAvatarToContainer(profilePreviewContainer, tempProfileState, 'w-8 h-8 text-emerald-400');
-          showToast('Profile photo selected!', 'info');
-        };
-        reader.readAsDataURL(file);
-      }
-    });
-
-    saveProfileBtn.addEventListener('click', () => {
-      userProfile.name = userNameInput.value.trim() || 'SmartSpend';
-      userProfile.type = tempProfileState.type;
-      userProfile.data = tempProfileState.data;
-
-      saveProfileToStorage();
-      renderUserProfileHeader();
-      profileModal.classList.add('hidden');
-      showToast('Profile updated successfully!', 'success');
-    });
-
-    // --- Account Icon Grid Handler ---
-    function renderAccountIconGrid() {
-      accountIconGrid.innerHTML = '';
-      PRESET_ACCOUNT_ICONS.forEach(iconName => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = `p-2 rounded-lg border text-slate-300 transition ${selectedAccountIconVal === iconName && selectedAccountIconType === 'icon' ? 'bg-emerald-600 border-emerald-500 text-white' : 'bg-slate-900 border-slate-800 hover:border-slate-700'}`;
-        btn.innerHTML = `<i data-lucide="${iconName}" class="w-4 h-4"></i>`;
-        btn.addEventListener('click', () => {
-          selectedAccountIconType = 'icon';
-          selectedAccountIconVal = iconName;
-          renderAccountIconGrid();
-        });
-        accountIconGrid.appendChild(btn);
-      });
-      lucide.createIcons();
-    }
-
-    accountIconFileInput.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        if (file.size > 1.5 * 1024 * 1024) {
-          showToast('Icon file must be smaller than 1.5MB', 'error');
-          return;
-        }
-        const reader = new FileReader();
-        reader.onload = function(evt) {
-          selectedAccountIconType = 'image';
-          selectedAccountIconVal = evt.target.result;
-          showToast('Custom account icon loaded!', 'info');
-        };
-        reader.readAsDataURL(file);
-      }
-    });
-
-    // --- Currency Updates ---
-    currencySelector.addEventListener('change', (e) => {
-      selectedCurrency = e.target.value;
-      localStorage.setItem('smartspend_currency', selectedCurrency);
-      updateCurrencyDisplays();
-      updateDashboard();
-      showToast(`Currency changed to ${selectedCurrency}`, 'info');
-    });
-
-    function updateCurrencyDisplays() {
-      document.querySelectorAll('.currencySymbolDisplay').forEach(el => {
-        el.textContent = selectedCurrency;
-      });
-    }
-
-    // --- Mode Toggle (Expense vs Savings) ---
-    modeExpenseBtn.addEventListener('click', () => {
-      entryTypeInput.value = 'expense';
-      modeExpenseBtn.className = "flex-1 py-2 text-xs font-semibold rounded-lg bg-emerald-600 text-white shadow transition-all flex items-center justify-center gap-1.5";
-      modeSavingsBtn.className = "flex-1 py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-slate-200 transition-all flex items-center justify-center gap-1.5";
-      
-      categoryGroup.classList.remove('hidden');
-      savingsGoalGroup.classList.add('hidden');
-      submitBtnText.textContent = "Record Expense";
-      submitBtn.className = "w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-semibold rounded-xl shadow-lg shadow-emerald-900/30 flex items-center justify-center gap-2 transition-all transform active:scale-[0.98]";
-    });
-
-    modeSavingsBtn.addEventListener('click', () => {
-      entryTypeInput.value = 'savings';
-      modeSavingsBtn.className = "flex-1 py-2 text-xs font-semibold rounded-lg bg-emerald-600 text-white shadow transition-all flex items-center justify-center gap-1.5";
-      modeExpenseBtn.className = "flex-1 py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-slate-200 transition-all flex items-center justify-center gap-1.5";
-      
-      savingsGoalGroup.classList.remove('hidden');
-      categoryGroup.classList.add('hidden');
-      submitBtnText.textContent = "Deposit to Savings";
-      submitBtn.className = "w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-semibold rounded-xl shadow-lg shadow-emerald-900/30 flex items-center justify-center gap-2 transition-all transform active:scale-[0.98]";
-    });
-
-    // --- Accounts Select Box Population ---
-    function populateAccountSelect() {
-      entryAccount.innerHTML = '';
-      accounts.forEach(acc => {
-        const opt = document.createElement('option');
-        opt.value = acc.id;
-        opt.textContent = `${acc.name} (${selectedCurrency} ${acc.balance.toFixed(2)})`;
-        entryAccount.appendChild(opt);
-      });
-    }
-
-    // --- Category Auto-Complete ---
-    function renderCategoryDropdownOptions(query = '') {
-      const filtered = PRESET_CATEGORIES.filter(cat => 
-        cat.name.toLowerCase().includes(query.toLowerCase())
-      );
-
-      categoryOptionsList.innerHTML = '';
-
-      if (filtered.length === 0) {
-        const customOption = document.createElement('div');
-        customOption.className = "px-3 py-2 text-xs text-emerald-400 hover:bg-slate-800 cursor-pointer flex items-center gap-2 font-medium";
-        customOption.innerHTML = `<i data-lucide="plus" class="w-3.5 h-3.5"></i> Custom: "${query}"`;
-        customOption.addEventListener('click', () => {
-          categoryInput.value = query;
-          categoryDropdown.classList.add('hidden');
-        });
-        categoryOptionsList.appendChild(customOption);
-      } else {
-        filtered.forEach(cat => {
-          const item = document.createElement('div');
-          item.className = "px-3 py-2 text-xs text-slate-200 hover:bg-slate-800 cursor-pointer flex items-center justify-between transition-colors";
-          item.innerHTML = `
-            <div class="flex items-center gap-2">
-              <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${cat.color}"></span>
-              <span>${cat.name}</span>
-            </div>
-          `;
-          item.addEventListener('click', () => {
-            categoryInput.value = cat.name;
-            categoryDropdown.classList.add('hidden');
-          });
-          categoryOptionsList.appendChild(item);
-        });
-      }
-      lucide.createIcons();
-    }
-
-    categoryInput.addEventListener('input', (e) => {
-      renderCategoryDropdownOptions(e.target.value);
-      categoryDropdown.classList.remove('hidden');
-    });
-
-    categoryInput.addEventListener('focus', () => {
-      renderCategoryDropdownOptions(categoryInput.value);
-      categoryDropdown.classList.remove('hidden');
-    });
-
-    toggleCategoryDropdown.addEventListener('click', (e) => {
-      e.stopPropagation();
-      categoryDropdown.classList.toggle('hidden');
-    });
-
-    document.addEventListener('click', (e) => {
-      if (!categoryInput.contains(e.target) && !categoryDropdown.contains(e.target)) {
-        categoryDropdown.classList.add('hidden');
-      }
-    });
-
-    // --- Form Submission Handle ---
-    transactionForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const type = entryTypeInput.value;
-      const date = entryDate.value;
-      const accountId = entryAccount.value;
-      const amount = parseFloat(entryAmount.value);
-      const notes = entryNotes.value.trim();
-
-      if (!date || !accountId || isNaN(amount) || amount <= 0) {
-        showToast('Please fill all required fields correctly.', 'error');
-        return;
-      }
-
-      const accountObj = accounts.find(a => a.id === accountId);
-      if (!accountObj) return;
-
-      let categoryOrGoal = '';
-      if (type === 'expense') {
-        categoryOrGoal = categoryInput.value.trim() || 'Uncategorized';
-        accountObj.balance -= amount;
-      } else {
-        categoryOrGoal = savingsGoalInput.value.trim() || 'General Savings Vault';
-        accountObj.balance += amount;
-      }
-
-      const newTx = {
-        id: 'tx_' + Date.now(),
-        type,
-        date,
-        accountId,
-        accountName: accountObj.name,
-        categoryOrGoal,
-        amount,
-        currency: selectedCurrency,
-        notes: notes || '-'
       };
 
-      transactions.unshift(newTx);
-
-      saveAccountsToStorage();
-      saveTransactionsToStorage();
-
-      entryAmount.value = '';
-      categoryInput.value = '';
-      savingsGoalInput.value = '';
-      entryNotes.value = '';
-
-      populateAccountSelect();
-      updateDashboard();
-
-      if (googleSheetUrl) {
-        sendToGoogleSheet(newTx);
-      } else {
-        showToast(`${type === 'expense' ? 'Expense' : 'Savings deposit'} recorded!`, 'success');
-      }
-    });
-
-    // --- Google Sheets Sync Call ---
-    async function sendToGoogleSheet(txData) {
-      try {
-        showToast('Syncing with Google Sheets...', 'info');
-        await fetch(googleSheetUrl, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            id: txData.id,
-            date: txData.date,
-            type: txData.type,
-            account: txData.accountName,
-            categoryOrGoal: txData.categoryOrGoal,
-            amount: txData.amount,
-            currency: txData.currency,
-            notes: txData.notes
-          })
-        });
-        showToast('Saved locally & to Google Sheets!', 'success');
-      } catch (error) {
-        console.error("Sync error:", error);
-        showToast('Saved locally (Sheet sync failed).', 'warning');
-      }
+      renderAvatarHtml(headerAvatar);
+      renderAvatarHtml(previewAvatar);
+      lucide.createIcons();
     }
 
-    // --- Delete Transaction ---
-    function deleteTransaction(id) {
-      const tx = transactions.find(t => t.id === id);
-      if (tx) {
-        const acc = accounts.find(a => a.id === tx.accountId);
-        if (acc) {
-          if (tx.type === 'expense') {
-            acc.balance += tx.amount;
-          } else {
-            acc.balance -= tx.amount;
+    function renderAccounts() {
+      const entryAccountSelect = document.getElementById('entryAccount');
+      const accountsListContainer = document.getElementById('accountsListContainer');
+
+      // Populate selects
+      entryAccountSelect.innerHTML = state.accounts.map(a => 
+        `<option value="${a.id}">${a.icon || '💳'} ${a.name} (${formatMoney(a.balance, a.currency)})</option>`
+      ).join('');
+
+      // Populate list cards
+      accountsListContainer.innerHTML = state.accounts.map(acc => {
+        const inBase = convertCurrency(acc.balance, acc.currency, state.baseCurrency);
+        return `
+          <div class="p-3 bg-slate-950/80 border border-slate-800 rounded-xl flex items-center justify-between hover:border-slate-700 transition group">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-lg">
+                ${acc.icon || '💳'}
+              </div>
+              <div>
+                <h4 class="text-xs font-semibold text-slate-200">${acc.name}</h4>
+                <p class="text-[10px] text-slate-400 font-mono">${formatMoney(acc.balance, acc.currency)}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="text-right">
+                <p class="text-xs font-bold text-slate-100 font-mono">${formatMoney(inBase, state.baseCurrency)}</p>
+                <p class="text-[9px] text-slate-500">Base Equivalent</p>
+              </div>
+              <button onclick="openEditAccountModal('${acc.id}')" class="p-1 text-slate-500 hover:text-emerald-400 opacity-0 group-hover:opacity-100 transition">
+                <i data-lucide="settings" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    function renderStats() {
+      let totalDeposited = 0;
+      let totalExpenses = 0;
+      let totalSavings = 0;
+      let monthExpenses = 0;
+
+      const currentMonthYear = new Date().toISOString().slice(0, 7);
+
+      state.transactions.forEach(tx => {
+        const converted = convertCurrency(tx.amount, tx.currency, state.baseCurrency);
+        if (tx.type === 'deposit') {
+          totalDeposited += converted;
+        } else if (tx.type === 'expense') {
+          totalExpenses += converted;
+          if (tx.date.startsWith(currentMonthYear)) {
+            monthExpenses += converted;
           }
-          saveAccountsToStorage();
+        } else if (tx.type === 'savings') {
+          totalSavings += converted;
         }
-      }
+      });
 
-      transactions = transactions.filter(t => t.id !== id);
-      saveTransactionsToStorage();
-      populateAccountSelect();
-      updateDashboard();
-      showToast('Transaction removed', 'info');
-    }
+      let netLiquidity = state.accounts.reduce((sum, acc) => {
+        return sum + convertCurrency(acc.balance, acc.currency, state.baseCurrency);
+      }, 0);
 
-    // --- Dashboard Updates ---
-    function updateDashboard() {
-      calculateStats();
-      renderAccountsList();
-      renderSavingsVaults();
-      renderTransactionsTable();
-      generateSmartInsights();
-      renderCharts();
-    }
+      document.getElementById('statTotalDeposited').textContent = formatMoney(totalDeposited);
+      document.getElementById('statTotalExpenses').textContent = formatMoney(totalExpenses);
+      document.getElementById('statTotalSavings').textContent = formatMoney(totalSavings);
+      document.getElementById('statTotalBalance').textContent = formatMoney(netLiquidity);
+      document.getElementById('statMonthExpenses').textContent = formatMoney(monthExpenses);
 
-    // --- Calculation of Metrics ---
-    function calculateStats() {
-      const totalSavings = transactions
-        .filter(t => t.type === 'savings')
-        .reduce((sum, t) => sum + t.amount, 0);
-
-      const totalExpenses = transactions
-        .filter(t => t.type === 'expense')
-        .reduce((sum, t) => sum + t.amount, 0);
-
-      const totalLiquidBalance = accounts.reduce((sum, a) => sum + a.balance, 0);
-
-      const now = new Date();
-      const curYear = now.getFullYear();
-      const curMonth = now.getMonth();
-
-      const monthExpenses = transactions.filter(t => {
-        if (t.type !== 'expense') return false;
-        const d = new Date(t.date);
-        return d.getFullYear() === curYear && d.getMonth() === curMonth;
-      }).reduce((sum, t) => sum + t.amount, 0);
-
-      statTotalSavings.textContent = `${selectedCurrency} ${totalSavings.toFixed(2)}`;
-      statTotalExpenses.textContent = `${selectedCurrency} ${totalExpenses.toFixed(2)}`;
-      statTotalBalance.textContent = `${selectedCurrency} ${totalLiquidBalance.toFixed(2)}`;
-      statMonthExpenses.textContent = `${selectedCurrency} ${monthExpenses.toFixed(2)}`;
-      
       const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-      statMonthName.textContent = `${monthNames[curMonth]} ${curYear}`;
+      document.getElementById('statMonthName').textContent = `${monthNames[new Date().getMonth()]} Spending`;
     }
 
-    // --- Accounts Card List ---
-    function renderAccountsList() {
-      accountsListContainer.innerHTML = '';
+    function renderTransactions() {
+      const tbody = document.getElementById('transactionTableBody');
+      const emptyState = document.getElementById('emptyTableState');
 
-      if (accounts.length === 0) {
-        accountsListContainer.innerHTML = `<p class="text-xs text-slate-500">No accounts created yet.</p>`;
-        return;
-      }
-
-      accounts.forEach(acc => {
-        const card = document.createElement('div');
-        card.className = "flex items-center justify-between p-3 rounded-xl bg-slate-950/70 border border-slate-800 hover:border-slate-700 transition";
-
-        let iconMarkup = `<i data-lucide="${acc.iconVal || 'wallet'}" class="w-4 h-4"></i>`;
-        if (acc.iconType === 'image') {
-          iconMarkup = `<img src="${acc.iconVal}" class="w-4 h-4 rounded object-cover" />`;
-        }
-
-        card.innerHTML = `
-          <div class="flex items-center gap-2.5">
-            <div class="p-2 rounded-lg bg-slate-800 text-slate-300 flex items-center justify-center w-8 h-8">
-              ${iconMarkup}
-            </div>
-            <div>
-              <p class="text-xs font-semibold text-slate-200">${acc.name}</p>
-              <p class="text-[10px] text-slate-500">${acc.type} Account</p>
-            </div>
-          </div>
-          <div class="text-right">
-            <p class="text-xs font-mono font-bold ${acc.balance >= 0 ? 'text-slate-100' : 'text-red-400'}">
-              ${selectedCurrency} ${acc.balance.toFixed(2)}
-            </p>
-          </div>
-        `;
-        accountsListContainer.appendChild(card);
+      let filtered = state.transactions.filter(tx => {
+        const matchesTab = state.activeTab === 'all' || tx.type === state.activeTab.replace('s', '');
+        const matchesQuery = tx.category.toLowerCase().includes(state.searchQuery.toLowerCase()) || 
+                             (tx.notes && tx.notes.toLowerCase().includes(state.searchQuery.toLowerCase()));
+        return matchesTab && matchesQuery;
       });
-      lucide.createIcons();
-    }
-
-    // --- Savings Vaults Cards ---
-    function renderSavingsVaults() {
-      savingsVaultsContainer.innerHTML = '';
-
-      const goals = {};
-      transactions.filter(t => t.type === 'savings').forEach(t => {
-        goals[t.categoryOrGoal] = (goals[t.categoryOrGoal] || 0) + t.amount;
-      });
-
-      const goalEntries = Object.entries(goals);
-      savingsVaultCount.textContent = `${goalEntries.length} Goal${goalEntries.length === 1 ? '' : 's'}`;
-
-      if (goalEntries.length === 0) {
-        savingsVaultsContainer.innerHTML = `
-          <div class="col-span-full p-4 text-center bg-slate-950/40 rounded-xl border border-slate-800/80 text-xs text-slate-500">
-            No savings deposited yet. Use "Add to Savings" to start your fund!
-          </div>`;
-        return;
-      }
-
-      goalEntries.forEach(([goalName, totalSaved]) => {
-        const card = document.createElement('div');
-        card.className = "p-3.5 bg-emerald-950/20 border border-emerald-800/40 rounded-xl space-y-2";
-        card.innerHTML = `
-          <div class="flex items-center justify-between">
-            <p class="text-xs font-semibold text-emerald-300 flex items-center gap-1.5">
-              <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i>
-              ${goalName}
-            </p>
-            <span class="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-mono">Vault</span>
-          </div>
-          <div class="flex items-baseline justify-between pt-1">
-            <span class="text-[10px] text-slate-400">Total Saved</span>
-            <span class="text-sm font-bold font-mono text-emerald-200">${selectedCurrency} ${totalSaved.toFixed(2)}</span>
-          </div>
-        `;
-        savingsVaultsContainer.appendChild(card);
-      });
-      lucide.createIcons();
-    }
-
-    // --- Render Table ---
-    function renderTransactionsTable() {
-      const query = searchInput.value.toLowerCase();
-
-      let filtered = transactions.filter(t => {
-        if (currentFilterTab === 'expenses' && t.type !== 'expense') return false;
-        if (currentFilterTab === 'savings' && t.type !== 'savings') return false;
-
-        return t.categoryOrGoal.toLowerCase().includes(query) ||
-               t.notes.toLowerCase().includes(query) ||
-               t.accountName.toLowerCase().includes(query) ||
-               t.date.includes(query);
-      });
-
-      transactionTableBody.innerHTML = '';
 
       if (filtered.length === 0) {
-        emptyTableState.classList.remove('hidden');
-      } else {
-        emptyTableState.classList.add('hidden');
-        filtered.forEach(tx => {
-          const isExpense = tx.type === 'expense';
-          const badgeClass = isExpense 
-            ? 'bg-red-500/10 text-red-400 border-red-500/20' 
-            : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+        tbody.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+      }
 
-          const row = document.createElement('tr');
-          row.className = "hover:bg-slate-800/40 transition-colors group";
-          row.innerHTML = `
-            <td class="py-3 px-3 font-mono text-slate-400 text-[11px]">${tx.date}</td>
+      emptyState.classList.add('hidden');
+      tbody.innerHTML = filtered.map(tx => {
+        const converted = convertCurrency(tx.amount, tx.currency, state.baseCurrency);
+        const account = state.accounts.find(a => a.id === tx.accountId);
+        const accountName = account ? account.name : 'Unknown Account';
+
+        let badgeClass = 'bg-red-500/10 text-red-400 border-red-500/20';
+        let badgeText = 'Expense';
+        if (tx.type === 'deposit') {
+          badgeClass = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+          badgeText = 'Deposit';
+        } else if (tx.type === 'savings') {
+          badgeClass = 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+          badgeText = 'Savings';
+        }
+
+        return `
+          <tr class="hover:bg-slate-900/50 transition border-b border-slate-800/40">
+            <td class="py-3 px-3 whitespace-nowrap text-slate-400">${tx.date}</td>
             <td class="py-3 px-3">
-              <span class="px-2 py-0.5 rounded text-[10px] font-semibold border ${badgeClass}">
-                ${isExpense ? 'Expense' : 'Savings'}
-              </span>
+              <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold border ${badgeClass}">${badgeText}</span>
             </td>
-            <td class="py-3 px-3 text-slate-300 font-medium">${tx.accountName}</td>
-            <td class="py-3 px-3 text-slate-200 font-medium">${tx.categoryOrGoal}</td>
-            <td class="py-3 px-3 text-slate-400 truncate max-w-[140px]" title="${tx.notes}">${tx.notes}</td>
-            <td class="py-3 px-3 text-right font-semibold font-mono ${isExpense ? 'text-red-400' : 'text-emerald-400'}">
-              ${isExpense ? '-' : '+'}${selectedCurrency} ${tx.amount.toFixed(2)}
+            <td class="py-3 px-3 text-slate-300 font-medium">${accountName}</td>
+            <td class="py-3 px-3">
+              <div class="font-medium text-slate-200">${tx.category}</div>
+              ${tx.notes ? `<div class="text-[10px] text-slate-500 truncate max-w-xs">${tx.notes}</div>` : ''}
             </td>
+            <td class="py-3 px-3 font-mono font-medium text-slate-300">${formatMoney(tx.amount, tx.currency)}</td>
+            <td class="py-3 px-3 text-right font-mono font-bold text-slate-100">${formatMoney(converted, state.baseCurrency)}</td>
             <td class="py-3 px-3 text-center">
-              <button onclick="deleteTransaction('${tx.id}')" class="text-slate-500 hover:text-red-400 p-1 rounded transition opacity-80 group-hover:opacity-100" title="Delete">
+              <button onclick="deleteTransaction('${tx.id}')" class="p-1 text-slate-500 hover:text-red-400 transition" title="Delete Entry">
                 <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
               </button>
             </td>
-          `;
-          transactionTableBody.appendChild(row);
-        });
-      }
+          </tr>
+        `;
+      }).join('');
       lucide.createIcons();
     }
 
-    searchInput.addEventListener('input', renderTransactionsTable);
+    function renderSavingsVaults() {
+      const container = document.getElementById('savingsVaultsContainer');
+      const countEl = document.getElementById('savingsVaultCount');
 
-    // Table Filter Tabs
-    tableTabAll.addEventListener('click', () => {
-      currentFilterTab = 'all';
-      tableTabAll.className = "px-3 py-1 text-xs font-medium rounded-lg bg-emerald-600 text-white transition";
-      tableTabExpenses.className = "px-3 py-1 text-xs font-medium text-slate-400 hover:text-slate-200 transition";
-      tableTabSavings.className = "px-3 py-1 text-xs font-medium text-slate-400 hover:text-slate-200 transition";
-      renderTransactionsTable();
-    });
+      const savingsMap = {};
+      state.transactions.filter(t => t.type === 'savings').forEach(t => {
+        const converted = convertCurrency(t.amount, t.currency, state.baseCurrency);
+        savingsMap[t.category] = (savingsMap[t.category] || 0) + converted;
+      });
 
-    tableTabExpenses.addEventListener('click', () => {
-      currentFilterTab = 'expenses';
-      tableTabExpenses.className = "px-3 py-1 text-xs font-medium rounded-lg bg-emerald-600 text-white transition";
-      tableTabAll.className = "px-3 py-1 text-xs font-medium text-slate-400 hover:text-slate-200 transition";
-      tableTabSavings.className = "px-3 py-1 text-xs font-medium text-slate-400 hover:text-slate-200 transition";
-      renderTransactionsTable();
-    });
+      const vaultKeys = Object.keys(savingsMap);
+      countEl.textContent = `${vaultKeys.length} Goals`;
 
-    tableTabSavings.addEventListener('click', () => {
-      currentFilterTab = 'savings';
-      tableTabSavings.className = "px-3 py-1 text-xs font-medium rounded-lg bg-emerald-600 text-white transition";
-      tableTabAll.className = "px-3 py-1 text-xs font-medium text-slate-400 hover:text-slate-200 transition";
-      tableTabExpenses.className = "px-3 py-1 text-xs font-medium text-slate-400 hover:text-slate-200 transition";
-      renderTransactionsTable();
-    });
-
-    // --- Smart Advice Engine ---
-    function generateSmartInsights() {
-      insightsContainer.innerHTML = '';
-
-      if (transactions.length < 2) {
-        insightsContainer.innerHTML = `
-          <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800 text-xs text-slate-400">
-            Log at least 2 entries to generate personalized spending & savings advice.
-          </div>`;
+      if (vaultKeys.length === 0) {
+        container.innerHTML = `<p class="col-span-2 text-xs text-slate-500 py-4 text-center">No active savings funds logged yet.</p>`;
         return;
       }
 
-      const totalSaved = transactions.filter(t => t.type === 'savings').reduce((s, t) => s + t.amount, 0);
-      const totalExpense = transactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
-
-      const insights = [];
-
-      if (totalSaved > 0 && totalExpense > 0) {
-        const savingsRatio = ((totalSaved / (totalSaved + totalExpense)) * 100).toFixed(0);
-        if (savingsRatio >= 20) {
-          insights.push({
-            type: 'success',
-            icon: 'award',
-            title: 'Great Savings Discipline!',
-            description: `You are saving ${savingsRatio}% of your total funds. Keeping your savings rate above 20% builds strong long-term security.`
-          });
-        } else {
-          insights.push({
-            type: 'tip',
-            icon: 'target',
-            title: 'Boost Your Savings Rate',
-            description: `Your current savings rate is ${savingsRatio}%. Try depositing a fixed amount into your Savings Vault every payday.`
-          });
-        }
-      }
-
-      const catTotals = {};
-      transactions.filter(t => t.type === 'expense').forEach(e => {
-        catTotals[e.categoryOrGoal] = (catTotals[e.categoryOrGoal] || 0) + e.amount;
-      });
-
-      const sortedCat = Object.entries(catTotals).sort((a, b) => b[1] - a[1]);
-      if (sortedCat.length > 0) {
-        const [topCat, topAmt] = sortedCat[0];
-        const topPct = ((topAmt / (totalExpense || 1)) * 100).toFixed(0);
-        
-        if (topPct > 35) {
-          insights.push({
-            type: 'warning',
-            icon: 'alert-triangle',
-            title: `High Spending in ${topCat}`,
-            description: `${topCat} accounts for ${topPct}% of expenses (${selectedCurrency} ${topAmt.toFixed(2)}). Consider capping this category.`
-          });
-        }
-      }
-
-      insights.forEach(item => {
-        const card = document.createElement('div');
-        let bgBorder = "bg-slate-950/80 border-slate-800 text-slate-300";
-        let iconColor = "text-emerald-400";
-
-        if (item.type === 'warning') {
-          bgBorder = "bg-amber-950/20 border-amber-800/40 text-amber-200";
-          iconColor = "text-amber-400";
-        } else if (item.type === 'success') {
-          bgBorder = "bg-emerald-950/20 border-emerald-800/40 text-emerald-200";
-          iconColor = "text-emerald-400";
-        } else if (item.type === 'tip') {
-          bgBorder = "bg-blue-950/20 border-blue-800/40 text-blue-200";
-          iconColor = "text-blue-400";
-        }
-
-        card.className = `p-3 rounded-xl border ${bgBorder} space-y-1 transition-all`;
-        card.innerHTML = `
-          <div class="flex items-center gap-2 font-semibold text-xs">
-            <i data-lucide="${item.icon}" class="w-4 h-4 ${iconColor}"></i>
-            <span>${item.title}</span>
+      container.innerHTML = vaultKeys.map(key => `
+        <div class="p-3.5 bg-slate-950/80 border border-slate-800 rounded-xl space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-200 flex items-center gap-1.5">
+              <i data-lucide="target" class="w-3.5 h-3.5 text-blue-400"></i> ${key}
+            </span>
+            <span class="text-xs font-bold font-mono text-emerald-400">${formatMoney(savingsMap[key])}</span>
           </div>
-          <p class="text-[11px] leading-relaxed text-slate-400">${item.description}</p>
-        `;
-        insightsContainer.appendChild(card);
-      });
-
+          <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+            <div class="bg-blue-500 h-full rounded-full w-full"></div>
+          </div>
+        </div>
+      `).join('');
       lucide.createIcons();
     }
 
-    // --- Chart Rendering ---
-    function renderCharts() {
-      const categoryTotals = {};
-      transactions.filter(t => t.type === 'expense').forEach(e => {
-        categoryTotals[e.categoryOrGoal] = (categoryTotals[e.categoryOrGoal] || 0) + e.amount;
+    function renderInsights() {
+      const container = document.getElementById('insightsContainer');
+      let totalExp = 0, totalDep = 0;
+
+      state.transactions.forEach(t => {
+        const c = convertCurrency(t.amount, t.currency, state.baseCurrency);
+        if (t.type === 'expense') totalExp += c;
+        if (t.type === 'deposit') totalDep += c;
       });
 
-      const labels = Object.keys(categoryTotals);
-      const dataValues = Object.values(categoryTotals);
+      const ratio = totalDep > 0 ? ((totalExp / totalDep) * 100).toFixed(0) : 0;
+      
+      let insightText = "Great job! Keep tracking your spending regularly.";
+      let adviceBadge = "Healthy Savings Rate";
 
-      const backgroundColors = labels.map(label => {
-        const preset = PRESET_CATEGORIES.find(c => c.name.toLowerCase() === label.toLowerCase());
-        return preset ? preset.color : '#64748b';
-      });
-
-      if (categoryChartInstance) {
-        categoryChartInstance.destroy();
+      if (ratio > 80) {
+        insightText = `Caution: You have spent ${ratio}% of your total deposited funds. Consider dialing back unnecessary expenses.`;
+        adviceBadge = "High Budget Utilization";
+      } else if (totalDep === 0 && totalExp > 0) {
+        insightText = "Log your monthly income/deposits to compute real savings ratios accurately.";
+        adviceBadge = "Setup Income";
       }
 
+      container.innerHTML = `
+        <div class="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl space-y-1">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-amber-400">${adviceBadge}</span>
+            <span class="text-[10px] text-slate-400 font-mono">${ratio}% Used</span>
+          </div>
+          <p class="text-xs text-slate-300 leading-relaxed">${insightText}</p>
+        </div>
+      `;
+    }
+
+    function renderCharts() {
+      // Category Breakdown Chart
+      const categoryTotals = {};
+      state.transactions.filter(t => t.type === 'expense').forEach(t => {
+        const converted = convertCurrency(t.amount, t.currency, state.baseCurrency);
+        categoryTotals[t.category] = (categoryTotals[t.category] || 0) + converted;
+      });
+
+      const catLabels = Object.keys(categoryTotals);
+      const catData = Object.values(categoryTotals);
+
       const ctxCat = document.getElementById('categoryChart').getContext('2d');
+      if (categoryChartInstance) categoryChartInstance.destroy();
+
       categoryChartInstance = new Chart(ctxCat, {
         type: 'doughnut',
         data: {
-          labels: labels.length > 0 ? labels : ['No Expense Yet'],
+          labels: catLabels.length ? catLabels : ['No Expenses Yet'],
           datasets: [{
-            data: dataValues.length > 0 ? dataValues : [1],
-            backgroundColor: dataValues.length > 0 ? backgroundColors : ['#334155'],
-            borderWidth: 2,
-            borderColor: '#0f172a'
+            data: catData.length ? catData : [1],
+            backgroundColor: catData.length ? [
+              '#16a34a', '#3b82f6', '#f59e0b', '#ec4899', '#8b5cf6', 
+              '#14b8a6', '#f97316', '#6366f1', '#06b6d4', '#64748b'
+            ] : ['#334155'],
+            borderWidth: 0
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
-            legend: {
-              position: 'right',
-              labels: { color: '#94a3b8', font: { size: 11 }, boxWidth: 12, padding: 12 }
-            },
-            tooltip: {
-              callbacks: {
-                label: function(context) {
-                  const val = context.raw || 0;
-                  return ` ${context.label}: ${selectedCurrency} ${val.toFixed(2)}`;
-                }
-              }
-            }
-          },
-          cutout: '65%'
+            legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 10 } } }
+          }
         }
       });
 
-      const totalSavingsAmt = transactions.filter(t => t.type === 'savings').reduce((s, t) => s + t.amount, 0);
-      const totalExpenseAmt = transactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
-
-      if (trendChartInstance) {
-        trendChartInstance.destroy();
-      }
+      // Trend Bar Chart
+      let expSum = 0, savSum = 0, depSum = 0;
+      state.transactions.forEach(t => {
+        const c = convertCurrency(t.amount, t.currency, state.baseCurrency);
+        if (t.type === 'expense') expSum += c;
+        if (t.type === 'savings') savSum += c;
+        if (t.type === 'deposit') depSum += c;
+      });
 
       const ctxTrend = document.getElementById('trendChart').getContext('2d');
+      if (trendChartInstance) trendChartInstance.destroy();
+
       trendChartInstance = new Chart(ctxTrend, {
         type: 'bar',
         data: {
-          labels: ['Total Financial Allocation'],
-          datasets: [
-            {
-              label: 'Savings Deposits',
-              data: [totalSavingsAmt],
-              backgroundColor: '#10b981',
-              borderRadius: 6
-            },
-            {
-              label: 'Expenses',
-              data: [totalExpenseAmt],
-              backgroundColor: '#ef4444',
-              borderRadius: 6
-            }
-          ]
+          labels: ['Income Deposited', 'Expenses', 'Savings Vaults'],
+          datasets: [{
+            label: `Totals (${state.baseCurrency})`,
+            data: [depSum, expSum, savSum],
+            backgroundColor: ['#22c55e', '#ef4444', '#3b82f6'],
+            borderRadius: 8
+          }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
           scales: {
-            x: { ticks: { color: '#64748b' }, grid: { color: 'rgba(51, 65, 85, 0.2)' } },
-            y: { ticks: { color: '#64748b' }, grid: { color: 'rgba(51, 65, 85, 0.2)' } }
+            y: { ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' } },
+            x: { ticks: { color: '#94a3b8' }, grid: { display: false } }
           },
           plugins: {
-            legend: { labels: { color: '#94a3b8', font: { size: 11 } } }
+            legend: { display: false }
           }
         }
       });
     }
 
-    // Chart Switcher
-    chartViewCategoryBtn.addEventListener('click', () => {
-      categoryChartWrapper.classList.remove('hidden');
-      trendChartWrapper.classList.add('hidden');
-      chartViewCategoryBtn.className = "px-3 py-1 text-xs rounded-lg bg-emerald-600 text-white font-medium transition";
-      chartViewTrendBtn.className = "px-3 py-1 text-xs rounded-lg bg-slate-800 text-slate-400 hover:text-slate-200 font-medium transition";
-    });
+    function renderAll() {
+      renderProfile();
+      renderAccounts();
+      renderStats();
+      renderTransactions();
+      renderSavingsVaults();
+      renderInsights();
+      renderCharts();
 
-    chartViewTrendBtn.addEventListener('click', () => {
-      trendChartWrapper.classList.remove('hidden');
-      categoryChartWrapper.classList.add('hidden');
-      chartViewTrendBtn.className = "px-3 py-1 text-xs rounded-lg bg-emerald-600 text-white font-medium transition";
-      chartViewCategoryBtn.className = "px-3 py-1 text-xs rounded-lg bg-slate-800 text-slate-400 hover:text-slate-200 font-medium transition";
-    });
-
-    // --- New Account Modal Logic ---
-    const showAccountModal = () => accountModal.classList.remove('hidden');
-    const hideAccountModal = () => accountModal.classList.add('hidden');
-
-    openAccountModalBtn.addEventListener('click', showAccountModal);
-    openAccountModalBtn2.addEventListener('click', showAccountModal);
-    closeAccountModal.addEventListener('click', hideAccountModal);
-    cancelAccountBtn.addEventListener('click', hideAccountModal);
-
-    newAccountForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const name = document.getElementById('newAccountName').value.trim();
-      const type = document.getElementById('newAccountType').value;
-      const initialBalance = parseFloat(document.getElementById('newAccountBalance').value) || 0;
-
-      if (!name) return;
-
-      const newAccount = {
-        id: 'acc_' + Date.now(),
-        name,
-        type,
-        balance: initialBalance,
-        iconType: selectedAccountIconType,
-        iconVal: selectedAccountIconVal
-      };
-
-      accounts.push(newAccount);
-      saveAccountsToStorage();
-      populateAccountSelect();
-      updateDashboard();
-
-      document.getElementById('newAccountName').value = '';
-      document.getElementById('newAccountBalance').value = '0.00';
-      hideAccountModal();
-      showToast(`Account "${name}" created!`, 'success');
-    });
-
-    // --- Google Sheets Modal Logic ---
-    openConfigBtn.addEventListener('click', () => configModal.classList.remove('hidden'));
-    closeConfigModal.addEventListener('click', () => configModal.classList.add('hidden'));
-
-    saveConfigBtn.addEventListener('click', () => {
-      const url = sheetUrlInput.value.trim();
-      googleSheetUrl = url;
-      localStorage.setItem('smartspend_sheet_url', url);
-
-      if (url) {
-        sheetStatusDot.className = "w-2 h-2 rounded-full bg-emerald-500";
-        showToast('Google Sheet Web App URL saved!', 'success');
-      } else {
-        sheetStatusDot.className = "w-2 h-2 rounded-full bg-amber-500";
-        showToast('Google Sheet URL cleared.', 'info');
-      }
-      configModal.classList.add('hidden');
-    });
-
-    copyScriptBtn.addEventListener('click', () => {
-      const scriptCode = `function doPost(e) {\n  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();\n  var data = JSON.parse(e.postData.contents);\n  if (sheet.getLastRow() === 0) {\n    sheet.appendRow(["ID", "Date", "Type", "Account", "Category/Goal", "Amount", "Currency", "Notes", "Timestamp"]);\n  }\n  sheet.appendRow([data.id, data.date, data.type, data.account, data.categoryOrGoal, data.amount, data.currency, data.notes, new Date()]);\n  return ContentService.createTextOutput(JSON.stringify({ "result": "success" })).setMimeType(ContentService.MimeType.JSON);\n}`;
+      // Update Live Rate Text Header
+      const rateNpr = DEFAULT_EXCHANGE_RATES.NPR;
+      document.getElementById('liveRateText').textContent = `1 QAR ≈ ${rateNpr} NPR | 1 USD ≈ ${DEFAULT_EXCHANGE_RATES.INR} INR`;
       
-      try {
-        const tempTextArea = document.createElement('textarea');
-        tempTextArea.value = scriptCode;
-        document.body.appendChild(tempTextArea);
-        tempTextArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(tempTextArea);
-        showToast('Apps Script code copied!', 'info');
-      } catch (err) {
-        showToast('Copy failed. Please copy text manually.', 'warning');
+      // Update Sheet Dot Status
+      const sheetDot = document.getElementById('sheetStatusDot');
+      if (state.googleSheetUrl) {
+        sheetDot.className = "w-2 h-2 rounded-full bg-emerald-400";
+        sheetDot.title = "Connected to Google Sheets";
+      } else {
+        sheetDot.className = "w-2 h-2 rounded-full bg-amber-500";
+        sheetDot.title = "Not connected";
       }
-    });
+    }
 
-    document.getElementById('testConnectionBtn').addEventListener('click', () => {
-      const url = sheetUrlInput.value.trim();
-      if (!url) {
-        showToast('Please enter Web App URL first', 'error');
-        return;
-      }
-      showToast('Testing endpoint connection...', 'info');
-      fetch(url, { method: 'GET', mode: 'no-cors' })
-        .then(() => showToast('Endpoint connected!', 'success'))
-        .catch(() => showToast('Connection failed. Verify URL', 'error'));
-    });
+    // --- INTERACTION & EVENT LISTENERS ---
+    document.addEventListener('DOMContentLoaded', () => {
+      // Set today date
+      document.getElementById('entryDate').value = new Date().toISOString().slice(0, 10);
 
-    // --- Export CSV ---
-    exportCsvBtn.addEventListener('click', () => {
-      if (transactions.length === 0) {
-        showToast('No data available to export', 'warning');
-        return;
-      }
-
-      const headers = ['ID', 'Type', 'Date', 'Account', 'CategoryOrGoal', 'Amount', 'Currency', 'Notes'];
-      const csvRows = [headers.join(',')];
-
-      transactions.forEach(tx => {
-        const row = [
-          `"${tx.id}"`,
-          `"${tx.type}"`,
-          `"${tx.date}"`,
-          `"${tx.accountName.replace(/"/g, '""')}"`,
-          `"${tx.categoryOrGoal.replace(/"/g, '""')}"`,
-          tx.amount,
-          `"${tx.currency || selectedCurrency}"`,
-          `"${tx.notes.replace(/"/g, '""')}"`
-        ];
-        csvRows.push(row.join(','));
+      // Base Currency Switcher
+      const currencySelector = document.getElementById('currencySelector');
+      currencySelector.value = state.baseCurrency;
+      currencySelector.addEventListener('change', (e) => {
+        state.baseCurrency = e.target.value;
+        saveState();
+        showToast(`Base currency set to ${state.baseCurrency}`);
       });
 
-      const csvContent = 'data:text/csv;charset=utf-8,' + csvRows.join('\n');
-      const encodedUri = encodeURI(csvContent);
-      const link = document.createElement('a');
-      link.setAttribute('href', encodedUri);
-      link.setAttribute('download', `smartspend_history_${new Date().toISOString().split('T')[0]}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      showToast('CSV Export downloaded', 'success');
+      // Entry Mode Switchers
+      const modeExpenseBtn = document.getElementById('modeExpenseBtn');
+      const modeDepositBtn = document.getElementById('modeDepositBtn');
+      const modeSavingsBtn = document.getElementById('modeSavingsBtn');
+      const entryType = document.getElementById('entryType');
+      const submitBtnText = document.getElementById('submitBtnText');
+
+      const accountLabel = document.getElementById('accountLabel');
+      const categoryGroup = document.getElementById('categoryGroup');
+      const savingsGoalGroup = document.getElementById('savingsGoalGroup');
+      const depositSourceGroup = document.getElementById('depositSourceGroup');
+
+      function switchMode(mode) {
+        entryType.value = mode;
+        [modeExpenseBtn, modeDepositBtn, modeSavingsBtn].forEach(b => {
+          b.className = "py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-slate-200 transition-all flex items-center justify-center gap-1";
+        });
+
+        categoryGroup.classList.add('hidden');
+        savingsGoalGroup.classList.add('hidden');
+        depositSourceGroup.classList.add('hidden');
+
+        if (mode === 'expense') {
+          modeExpenseBtn.className = "py-2 text-xs font-semibold rounded-lg bg-emerald-600 text-white shadow transition-all flex items-center justify-center gap-1";
+          submitBtnText.textContent = "Record Cash Used";
+          accountLabel.textContent = "Source Account (Deducted)";
+          categoryGroup.classList.remove('hidden');
+        } else if (mode === 'deposit') {
+          modeDepositBtn.className = "py-2 text-xs font-semibold rounded-lg bg-emerald-600 text-white shadow transition-all flex items-center justify-center gap-1";
+          submitBtnText.textContent = "Record Deposit";
+          accountLabel.textContent = "Destination Account (Credited)";
+          depositSourceGroup.classList.remove('hidden');
+        } else if (mode === 'savings') {
+          modeSavingsBtn.className = "py-2 text-xs font-semibold rounded-lg bg-blue-600 text-white shadow transition-all flex items-center justify-center gap-1";
+          submitBtnText.textContent = "Move to Savings Goal";
+          accountLabel.textContent = "Deduct From Account";
+          savingsGoalGroup.classList.remove('hidden');
+        }
+      }
+
+      modeExpenseBtn.addEventListener('click', () => switchMode('expense'));
+      modeDepositBtn.addEventListener('click', () => switchMode('deposit'));
+      modeSavingsBtn.addEventListener('click', () => switchMode('savings'));
+
+      // Category Autocomplete Logic
+      const categoryInput = document.getElementById('categoryInput');
+      const categoryDropdown = document.getElementById('categoryDropdown');
+      const categoryOptionsList = document.getElementById('categoryOptionsList');
+      const toggleCategoryDropdown = document.getElementById('toggleCategoryDropdown');
+
+      function populateCategoryOptions(filter = '') {
+        const matches = DEFAULT_CATEGORIES.filter(c => c.toLowerCase().includes(filter.toLowerCase()));
+        categoryOptionsList.innerHTML = matches.map(c => `
+          <div class="px-3 py-2 text-xs text-slate-200 hover:bg-emerald-600/20 hover:text-emerald-300 cursor-pointer transition cat-option">${c}</div>
+        `).join('');
+
+        document.querySelectorAll('.cat-option').forEach(opt => {
+          opt.addEventListener('click', () => {
+            categoryInput.value = opt.textContent;
+            categoryDropdown.classList.add('hidden');
+          });
+        });
+      }
+
+      categoryInput.addEventListener('focus', () => {
+        populateCategoryOptions(categoryInput.value);
+        categoryDropdown.classList.remove('hidden');
+      });
+
+      categoryInput.addEventListener('input', () => {
+        populateCategoryOptions(categoryInput.value);
+        categoryDropdown.classList.remove('hidden');
+      });
+
+      toggleCategoryDropdown.addEventListener('click', () => {
+        categoryDropdown.classList.toggle('hidden');
+        if (!categoryDropdown.classList.contains('hidden')) populateCategoryOptions('');
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!document.getElementById('categoryGroup').contains(e.target)) {
+          categoryDropdown.classList.add('hidden');
+        }
+      });
+
+      // Entry Live Exchange Preview
+      const entryAmount = document.getElementById('entryAmount');
+      const entryCurrency = document.getElementById('entryCurrency');
+      const liveExchangeBox = document.getElementById('liveExchangeBox');
+      const liveExchangeText = document.getElementById('liveExchangeText');
+
+      function updateEntryExchangePreview() {
+        const amt = parseFloat(entryAmount.value) || 0;
+        const curr = entryCurrency.value;
+        if (amt > 0 && curr !== state.baseCurrency) {
+          const converted = convertCurrency(amt, curr, state.baseCurrency);
+          liveExchangeText.textContent = formatMoney(converted, state.baseCurrency);
+          liveExchangeBox.classList.remove('hidden');
+        } else {
+          liveExchangeBox.classList.add('hidden');
+        }
+      }
+
+      entryAmount.addEventListener('input', updateEntryExchangePreview);
+      entryCurrency.addEventListener('change', updateEntryExchangePreview);
+
+      // Form Submit (Transaction Record)
+      document.getElementById('transactionForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const type = entryType.value;
+        const date = document.getElementById('entryDate').value;
+        const accountId = document.getElementById('entryAccount').value;
+        const amount = parseFloat(entryAmount.value);
+        const currency = entryCurrency.value;
+        const notes = document.getElementById('entryNotes').value;
+
+        let category = "General";
+        if (type === 'expense') {
+          category = categoryInput.value.trim() || "Uncategorized";
+        } else if (type === 'deposit') {
+          category = document.getElementById('depositSourceInput').value.trim() || "Direct Income";
+        } else if (type === 'savings') {
+          category = document.getElementById('savingsGoalInput').value.trim() || "General Savings";
+        }
+
+        // Account Balance Update
+        const targetAcc = state.accounts.find(a => a.id === accountId);
+        if (targetAcc) {
+          // Convert entry amount to target account's native currency
+          const inAccCurr = convertCurrency(amount, currency, targetAcc.currency);
+          if (type === 'expense' || type === 'savings') {
+            targetAcc.balance -= inAccCurr;
+          } else if (type === 'deposit') {
+            targetAcc.balance += inAccCurr;
+          }
+        }
+
+        const newTx = {
+          id: 'tx-' + Date.now(),
+          type,
+          date,
+          accountId,
+          amount,
+          currency,
+          category,
+          notes
+        };
+
+        state.transactions.unshift(newTx);
+        saveState();
+        showToast("Transaction logged successfully!");
+
+        // Sync with Google Sheets if configured
+        if (state.googleSheetUrl) syncToGoogleSheet(newTx);
+
+        // Reset form fields
+        entryAmount.value = '';
+        document.getElementById('entryNotes').value = '';
+        liveExchangeBox.classList.add('hidden');
+      });
+
+      // Chart View Toggles
+      const chartViewCategoryBtn = document.getElementById('chartViewCategoryBtn');
+      const chartViewTrendBtn = document.getElementById('chartViewTrendBtn');
+      const categoryChartWrapper = document.getElementById('categoryChartWrapper');
+      const trendChartWrapper = document.getElementById('trendChartWrapper');
+
+      chartViewCategoryBtn.addEventListener('click', () => {
+        categoryChartWrapper.classList.remove('hidden');
+        trendChartWrapper.classList.add('hidden');
+        chartViewCategoryBtn.className = "px-3 py-1 text-xs rounded-lg bg-emerald-600 text-white font-medium transition";
+        chartViewTrendBtn.className = "px-3 py-1 text-xs rounded-lg bg-slate-800 text-slate-400 hover:text-slate-200 font-medium transition";
+      });
+
+      chartViewTrendBtn.addEventListener('click', () => {
+        trendChartWrapper.classList.remove('hidden');
+        categoryChartWrapper.classList.add('hidden');
+        chartViewTrendBtn.className = "px-3 py-1 text-xs rounded-lg bg-emerald-600 text-white font-medium transition";
+        chartViewCategoryBtn.className = "px-3 py-1 text-xs rounded-lg bg-slate-800 text-slate-400 hover:text-slate-200 font-medium transition";
+      });
+
+      // Table Filter Tabs
+      const tabs = {
+        all: document.getElementById('tableTabAll'),
+        deposits: document.getElementById('tableTabDeposits'),
+        expenses: document.getElementById('tableTabExpenses'),
+        savings: document.getElementById('tableTabSavings')
+      };
+
+      Object.keys(tabs).forEach(key => {
+        tabs[key].addEventListener('click', () => {
+          state.activeTab = key;
+          Object.values(tabs).forEach(b => b.className = "px-3 py-1 text-xs font-medium text-slate-400 hover:text-slate-200 transition");
+          tabs[key].className = "px-3 py-1 text-xs font-medium rounded-lg bg-emerald-600 text-white transition";
+          renderTransactions();
+        });
+      });
+
+      document.getElementById('searchInput').addEventListener('input', (e) => {
+        state.searchQuery = e.target.value;
+        renderTransactions();
+      });
+
+      // CSV Export
+      document.getElementById('exportCsvBtn').addEventListener('click', () => {
+        if (state.transactions.length === 0) {
+          showToast("No data to export!", "error");
+          return;
+        }
+
+        let csv = "Date,Type,Account,Category,Amount,Currency,Notes\n";
+        state.transactions.forEach(t => {
+          const acc = state.accounts.find(a => a.id === t.accountId);
+          csv += `"${t.date}","${t.type}","${acc ? acc.name : ''}","${t.category}",${t.amount},"${t.currency}","${t.notes || ''}"\n`;
+        });
+
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `smartspend-export-${new Date().toISOString().slice(0, 10)}.csv`;
+        a.click();
+        showToast("CSV Downloaded!");
+      });
+
+      // Modal Handlers
+      // Profile Modal
+      const profileModal = document.getElementById('profileModal');
+      document.getElementById('openProfileModalBtn').addEventListener('click', () => {
+        document.getElementById('userNameInput').value = state.user.name;
+        profileModal.classList.remove('hidden');
+      });
+      document.getElementById('closeProfileModal').addEventListener('click', () => profileModal.classList.add('hidden'));
+      document.getElementById('cancelProfileBtn').addEventListener('click', () => profileModal.classList.add('hidden'));
+
+      // Avatar Preset Selector
+      const presets = ["🧔‍♂️", "👩‍💼", "👨‍💻", "🕶️", "🦁", "🚀", "👑", "💎", "🎯", "⚡", "🍀", "🔥"];
+      const presetGrid = document.getElementById('presetAvatarGrid');
+      presetGrid.innerHTML = presets.map(p => `<button type="button" class="p-2 hover:bg-slate-800 rounded-xl transition preset-avatar-btn">${p}</button>`).join('');
+
+      document.querySelectorAll('.preset-avatar-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.user.avatarType = 'preset';
+          state.user.avatarVal = btn.textContent;
+          renderProfile();
+          showToast("Avatar updated!");
+        });
+      });
+
+      // File Upload Profile Photo
+      document.getElementById('profilePhotoInput').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            state.user.avatarType = 'custom';
+            state.user.avatarVal = evt.target.result;
+            renderProfile();
+            showToast("Custom photo loaded!");
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+
+      document.getElementById('saveProfileBtn').addEventListener('click', () => {
+        state.user.name = document.getElementById('userNameInput').value.trim() || "SmartSpend";
+        saveState();
+        profileModal.classList.add('hidden');
+        showToast("Profile settings saved!");
+      });
+
+      // Account Modal
+      const accountModal = document.getElementById('accountModal');
+      const openAccBtns = [document.getElementById('openAccountModalBtn'), document.getElementById('openAccountModalBtn2')];
+      openAccBtns.forEach(btn => btn && btn.addEventListener('click', () => accountModal.classList.remove('hidden')));
+      document.getElementById('closeAccountModal').addEventListener('click', () => accountModal.classList.add('hidden'));
+      document.getElementById('cancelAccountBtn').addEventListener('click', () => accountModal.classList.add('hidden'));
+
+      // Account Icon Options
+      const accIcons = ["💵", "🏛️", "💳", "🏦", "💰", "🇳🇵", "🇶🇦", "🌐"];
+      let selectedAccIcon = "💳";
+      const accountIconGrid = document.getElementById('accountIconGrid');
+      accountIconGrid.innerHTML = accIcons.map(icon => `
+        <button type="button" class="p-2 bg-slate-900 border border-slate-800 hover:border-emerald-500 rounded-xl font-icon-btn">${icon}</button>
+      `).join('');
+
+      document.querySelectorAll('.font-icon-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          selectedAccIcon = btn.textContent;
+          showToast(`Icon selected: ${selectedAccIcon}`);
+        });
+      });
+
+      document.getElementById('newAccountForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('newAccountName').value;
+        const type = document.getElementById('newAccountType').value;
+        const currency = document.getElementById('newAccountCurrency').value;
+        const balance = parseFloat(document.getElementById('newAccountBalance').value) || 0;
+
+        state.accounts.push({
+          id: 'acc-' + Date.now(),
+          name,
+          type,
+          currency,
+          balance,
+          icon: selectedAccIcon
+        });
+
+        saveState();
+        accountModal.classList.add('hidden');
+        showToast("Account created successfully!");
+      });
+
+      // Google Sheets Config Modal
+      const configModal = document.getElementById('configModal');
+      document.getElementById('openConfigBtn').addEventListener('click', () => {
+        document.getElementById('sheetScriptUrlInput').value = state.googleSheetUrl;
+        configModal.classList.remove('hidden');
+      });
+      document.getElementById('closeConfigModal').addEventListener('click', () => configModal.classList.add('hidden'));
+
+      document.getElementById('saveConfigBtn').addEventListener('click', () => {
+        state.googleSheetUrl = document.getElementById('sheetScriptUrlInput').value.trim();
+        saveState();
+        configModal.classList.add('hidden');
+        showToast("Google Sheets configuration saved!");
+      });
+
+      document.getElementById('copyAppsScriptBtn').addEventListener('click', () => {
+        const scriptTemplate = `function doPost(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var data = JSON.parse(e.postData.contents);
+  sheet.appendRow([new Date(), data.date, data.type, data.category, data.amount, data.currency, data.notes]);
+  return ContentService.createTextOutput(JSON.stringify({"result": "success"})).setMimeType(ContentService.MimeType.JSON);
+}`;
+        navigator.clipboard.writeText(scriptTemplate);
+        showToast("Apps Script copied to clipboard!");
+      });
+
+      // Initial Render
+      renderAll();
     });
 
-    // --- Notification Toasts ---
-    function showToast(message, type = 'info') {
-      const toastContainer = document.getElementById('toastContainer');
-      const toast = document.createElement('div');
-      
-      let borderBg = 'bg-slate-900 border-slate-700 text-slate-100';
-      if (type === 'success') borderBg = 'bg-slate-900 border-emerald-500/50 text-emerald-400';
-      if (type === 'error') borderBg = 'bg-slate-900 border-red-500/50 text-red-400';
-      if (type === 'warning') borderBg = 'bg-slate-900 border-amber-500/50 text-amber-400';
+    // --- GLOBAL ACTIONS ---
+    window.deleteTransaction = function(txId) {
+      if (confirm("Are you sure you want to delete this transaction record?")) {
+        const tx = state.transactions.find(t => t.id === txId);
+        if (tx) {
+          // Reverse account balance adjustment
+          const acc = state.accounts.find(a => a.id === tx.accountId);
+          if (acc) {
+            const inAccCurr = convertCurrency(tx.amount, tx.currency, acc.currency);
+            if (tx.type === 'expense' || tx.type === 'savings') {
+              acc.balance += inAccCurr;
+            } else if (tx.type === 'deposit') {
+              acc.balance -= inAccCurr;
+            }
+          }
+        }
+        state.transactions = state.transactions.filter(t => t.id !== txId);
+        saveState();
+        showToast("Transaction deleted!");
+      }
+    };
 
-      toast.className = `px-4 py-2.5 rounded-xl border ${borderBg} shadow-xl text-xs font-medium flex items-center gap-2 transform transition-all duration-300 translate-y-2 opacity-0 pointer-events-auto`;
-      toast.innerHTML = `<span>${message}</span>`;
+    window.openEditAccountModal = function(accId) {
+      const acc = state.accounts.find(a => a.id === accId);
+      if (!acc) return;
 
-      toastContainer.appendChild(toast);
+      document.getElementById('editAccountId').value = acc.id;
+      document.getElementById('editAccountName').value = acc.name;
+      document.getElementById('editAccountBalance').value = acc.balance;
+      document.getElementById('editAccountCurrency').value = acc.currency;
 
-      setTimeout(() => {
-        toast.classList.remove('translate-y-2', 'opacity-0');
-      }, 10);
+      const modal = document.getElementById('editAccountModal');
+      modal.classList.remove('hidden');
 
-      setTimeout(() => {
-        toast.classList.add('opacity-0', 'translate-y-2');
-        setTimeout(() => toast.remove(), 300);
-      }, 3000);
+      document.getElementById('closeEditAccountModal').onclick = () => modal.classList.add('hidden');
+      document.getElementById('cancelEditAccountBtn').onclick = () => modal.classList.add('hidden');
+
+      document.getElementById('editAccountForm').onsubmit = (e) => {
+        e.preventDefault();
+        acc.name = document.getElementById('editAccountName').value;
+        acc.balance = parseFloat(document.getElementById('editAccountBalance').value) || 0;
+        acc.currency = document.getElementById('editAccountCurrency').value;
+        saveState();
+        modal.classList.add('hidden');
+        showToast("Account updated!");
+      };
+
+      document.getElementById('deleteAccountBtn').onclick = () => {
+        if (confirm("Delete this account?")) {
+          state.accounts = state.accounts.filter(a => a.id !== accId);
+          saveState();
+          modal.classList.add('hidden');
+          showToast("Account deleted!");
+        }
+      };
+    };
+
+    function syncToGoogleSheet(tx) {
+      if (!state.googleSheetUrl) return;
+      fetch(state.googleSheetUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(tx)
+      }).catch(err => console.error("Sheet sync error:", err));
     }
   </script>
 </body>
